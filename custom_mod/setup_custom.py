@@ -109,7 +109,7 @@ def write_det_jks(out_jks: pathlib.Path) -> None:
 def main() -> None:
  if '--calc-version' in os.sys.argv: return calc_ver()
  ver = os.environ.get('APP_VER', '0.9.4').strip() or '0.9.4'
- code = os.environ.get('APP_CODE', '2030009401').strip() or '0.9.4'
+ code = os.environ.get('APP_CODE', '2030009401').strip() or '2030009401'
  ps = ROOT / 'pubspec.yaml'
  pt, n = re.subn(r'^version:\s*\S+', f'version: {ver}+{code}', ps.read_text(encoding='utf-8'), count=1, flags=re.MULTILINE)
  assert n == 1
@@ -121,8 +121,14 @@ def main() -> None:
  shutil.copyfile(MOD / 'simple_workbench.dart', od / 'simple_workbench.dart')
  sa = ROOT / 'lib/providers/actions/setup.dart'
  st = sa.read_text(encoding='utf-8')
- if 'flclash_bridge.dart' not in st:
-  st = "import 'package:fl_clash/custom/flclash_bridge.dart';\n" + st
+ if 'FlClashBridge.simpleTakeover' not in st:
+  pm = re.search(r"part\s+of\s+['\"]([^'\"]+)['\"]\s*;", st)
+  ia = (sa.parent / pm.group(1)).resolve() if pm else sa
+    it = ia.read_text(encoding='utf-8')
+    if 'flclash_bridge.dart' not in it:
+       it, ni = re.subn(r'^(\s*import\s+)', "import 'package:fl_clash/custom/flclash_bridge.dart';\n\\1", it, count=1, flags=re.MULTILINE)
+     assert ni == 1
+      ia.write_text(it, encoding='utf-8')
   st, n1 = re.subn(r'final\s+profileBase\s*=\s*!isCustom\s*&&\s*!hasScript\s*\?\s*await\s+_core\.getProfileBase\(profileId\)\s*:\s*null;', 'final profileBase = !FlClashBridge.simpleTakeover && !isCustom && !hasScript ? await _core.getProfileBase(profileId) : null;', st, count=1)
   hk = "if (FlClashBridge.simpleTakeover) { await FlClashBridge.ensureWhitelistLoaded(); rawConfig = Map<String, dynamic>.from(rawConfig)..remove('rule-providers'); rawConfig['rules'] = FlClashBridge.buildSimpleRules(); patchConfig = patchConfig.copyWith(mode: Mode.rule); }\n    final directory = await appPath.profilesPath;"
   st = st.replace('final directory = await appPath.profilesPath;', hk, 1)
