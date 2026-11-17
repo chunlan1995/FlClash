@@ -1,11 +1,11 @@
 // ignore_for_file: require_trailing_commas, lines_longer_than_80_chars, unawaited_futures, curly_braces_in_flow_control_structures
-import 'dart:async'; import 'package:fl_clash/common/common.dart'; import 'package:fl_clash/ui/icons/icons.dart'; import 'package:fl_clash/views/profiles/add.dart';
+import 'dart:async'; import 'package:fl_clash/ui/icons/icons.dart'; import 'package:fl_clash/views/profiles/add.dart';
 import 'package:fl_clash/widgets/widgets.dart'; import 'package:flutter/services.dart'; import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; import 'package:prism_ui/prism_ui.dart'; import 'flclash_bridge.dart'; import 'smart_guardian.dart';
 class SimpleModeHost extends ConsumerWidget { const SimpleModeHost({super.key, required this.originalChild}); final Widget originalChild; @override
 Widget build(BuildContext context, WidgetRef ref) { ref.watch(guardianProvider.select((s) => s.autoSwitch)); final simple = ref.watch(simpleModeProvider);
 return Stack(children: [ Offstage(offstage: simple, child: originalChild), if (simple) const Positioned.fill(child: SimpleWorkbenchView())
-else Positioned(right: 18, bottom: 20, child: SafeArea(child: FilledButton.tonal(onPressed: () => ref.read(simpleModeProvider.notifier).setMode(true), child: const Text('返回极简模式')))),
+else Positioned(right: 18, bottom: 20, child: SafeArea(child: FilledButton(onPressed: () => ref.read(simpleModeProvider.notifier).setMode(true), child: const Text('返回极简模式')))),
 ]); } } class SimpleWorkbenchView extends ConsumerStatefulWidget { const SimpleWorkbenchView({super.key});
 @override ConsumerState<SimpleWorkbenchView> createState() => _SimpleWorkbenchViewState(); }
 class _SimpleWorkbenchViewState extends ConsumerState<SimpleWorkbenchView> { final _pCtrl = TextEditingController(), _lCtrl = TextEditingController();
@@ -34,9 +34,9 @@ padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
 child: Wrap(alignment: WrapAlignment.spaceBetween, crossAxisAlignment: WrapCrossAlignment.center, spacing: 10, runSpacing: 8, children: [
 Text('FlClash · 极简智控版', style: AppTextStyle.headline.of(ctx, emphasized: true)),
 Wrap(spacing: 8, runSpacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [ if (profs.isNotEmpty) PopupAnchor(
-targetBuilder: (open) => FilledButton.tonal(onPressed: open, child: Text('订阅: ${curP?.label ?? "选择"} ▾')),
+targetBuilder: (open) => TextButton(onPressed: open, child: Text('订阅: ${curP?.label ?? "选择"} ▾')),
 popupBuilder: (_) => PopupMenu(items: [for (final p in profs) PopupMenuItem(glyph: p.selected ? AppGlyphs.check : null, label: p.label, onPressed: p.onSelect)]), ),
-AddProfileMenu(builder: (open) => FilledButton.tonal(onPressed: open, child: const Text('+ 导入订阅'))),
+AddProfileMenu(builder: (open) => TextButton(onPressed: open, child: const Text('+ 导入订阅'))),
 TextButton(onPressed: () => ref.read(simpleModeProvider.notifier).setMode(false), child: const Text('完整面板')), ]), ]), ), Expanded(child: Padding(
 padding: const EdgeInsets.fromLTRB(16, 6, 16, 14), child: Column(spacing: 10, children: [ Container(
 padding: const EdgeInsets.all(14), decoration: _rbox(_fg(ctx).withValues(alpha: 0.045), 18),
@@ -52,10 +52,10 @@ Text('↓ ${fmtRate(st.downRate)}', style: AppTextStyle.subheadline.of(ctx, emph
 Text('当次累计: ${fmtBytes(st.sumTotal)}', style: AppTextStyle.subheadline.of(ctx)), ]), ]),
 Wrap(spacing: 8, runSpacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [
 _chip(ctx, st.autoSwitch, st.autoSwitch ? '✓ 超时无缝转接 (${st.limitMs}ms)' : '自动转接已暂停', () => ref.read(guardianProvider.notifier).setAuto(!st.autoSwitch)), PopupAnchor(
-targetBuilder: (open) => FilledButton.tonal(onPressed: open, child: Text('阈值 ${st.limitMs}ms ▾')),
+targetBuilder: (open) => TextButton(onPressed: open, child: Text('阈值 ${st.limitMs}ms ▾')),
 popupBuilder: (_) => PopupMenu(items: [for (final ms in const [600, 800, 1000, 1500]) PopupMenuItem(glyph: st.limitMs == ms ? AppGlyphs.check : null, label: ms == 1000 ? '1000ms (默认)' : '${ms}ms', onPressed: () => ref.read(guardianProvider.notifier).setLimit(ms))]),
 ), TextButton(onPressed: st.probing ? null : () => unawaited(ref.read(guardianProvider.notifier).manualCheck()), child: Text(st.probing ? '探测中...' : '立即测速择优')),
-if (grp != null) PopupAnchor( targetBuilder: (open) => FilledButton.tonal(onPressed: open, child: const Text('手动选节点 ▾')),
+if (grp != null) PopupAnchor( targetBuilder: (open) => TextButton(onPressed: open, child: const Text('手动选节点 ▾')),
 popupBuilder: (_) => PopupMenu(items: [for (final n in grp.all.take(45)) PopupMenuItem(glyph: n == grp.now ? AppGlyphs.check : null, label: n, onPressed: () => unawaited(ref.read(guardianProvider.notifier).pickNode(grp.name, n)))]),
 ), if (lastSw != null) Text('最近转接: ${lastSw.from} → ${lastSw.to} (${lastSw.tier.label}, ${lastSw.ms}ms)', style: AppTextStyle.caption1.of(ctx, emphasized: true)),
 ]), ]), ), if (!wide) Row(spacing: 8, children: [ Expanded(child: _chip(ctx, _tab == 0, '进程流量 (${st.procs.length})', () => setState(() => _tab = 0))),
