@@ -36,7 +36,7 @@ jobs:
       - name: Apply Customizations
         shell: bash
         env: {APP_VER: '${{ needs.version.outputs.ver }}', APP_CODE: '${{ needs.version.outputs.code }}'}
-        run: (python3 custom_mod/setup_custom.py || python custom_mod/setup_custom.py) && dart format lib/custom lib/pages/home.dart lib/providers/actions/setup.dart && flutter analyze --no-fatal-infos --no-fatal-warnings lib/custom lib/pages/home.dart lib/providers/actions/setup.dart
+        run: (python3 custom_mod/setup_custom.py || python custom_mod/setup_custom.py) && dart format lib/custom lib/pages/home.dart lib/providers/action.dart lib/providers/actions/setup.dart && flutter analyze --no-fatal-infos --no-fatal-warnings lib/custom lib/pages/home.dart lib/providers/action.dart
       - {if: "matrix.platform == 'android'", name: Build Android APK, env: {ANDROID_NDK_HOME: '${{ steps.build-ndk.outputs.ndk-path }}'}, run: dart setup.dart android --arch arm64 --env stable -v}
       - {if: "matrix.platform == 'windows'", name: Build Windows EXE, run: dart setup.dart windows --env stable -v}
       - {uses: actions/upload-artifact@v4, with: {name: 'custom-${{ matrix.platform }}-${{ matrix.arch }}', path: ./dist, overwrite: true}}
