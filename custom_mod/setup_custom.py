@@ -124,19 +124,19 @@ def main() -> None:
  if 'FlClashBridge.simpleTakeover' not in st:
   pm = re.search(r"part\s+of\s+['\"]([^'\"]+)['\"]\s*;", st)
   ia = (sa.parent / pm.group(1)).resolve() if pm else sa
-    it = ia.read_text(encoding='utf-8')
-    if 'flclash_bridge.dart' not in it:
-       it, ni = re.subn(r'^(\s*import\s+)', "import 'package:fl_clash/custom/flclash_bridge.dart';\n\\1", it, count=1, flags=re.MULTILINE)
+   it = ia.read_text(encoding='utf-8')
+   if 'flclash_bridge.dart' not in it:
+      it, ni = re.subn(r'^(\s*import\s+)', "import 'package:fl_clash/custom/flclash_bridge.dart';\n\\1", it, count=1, flags=re.MULTILINE)
      assert ni == 1
       ia.write_text(it, encoding='utf-8')
-  st, n1 = re.subn(r'final\s+profileBase\s*=\s*!isCustom\s*&&\s*!hasScript\s*\?\s*await\s+_core\.getProfileBase\(profileId\)\s*:\s*null;', 'final profileBase = !FlClashBridge.simpleTakeover && !isCustom && !hasScript ? await _core.getProfileBase(profileId) : null;', st, count=1)
-  hk = "if (FlClashBridge.simpleTakeover) { await FlClashBridge.ensureWhitelistLoaded(); rawConfig = Map<String, dynamic>.from(rawConfig)..remove('rule-providers'); rawConfig['rules'] = FlClashBridge.buildSimpleRules(); patchConfig = patchConfig.copyWith(mode: Mode.rule); }\n    final directory = await appPath.profilesPath;"
-  st = st.replace('final directory = await appPath.profilesPath;', hk, 1)
-  st, n2 = re.subn(r'(\bMakeRealProfileState\(\s*rules:\s*)rules,', r'\1FlClashBridge.simpleTakeover ? const <Rule>[] : rules,', st, count=1)
-  st, n3 = re.subn(r'(\baddedRules:\s*)setupState\.addedRules,', r'\1FlClashBridge.simpleTakeover ? const <Rule>[] : setupState.addedRules,', st, count=1)
-  st, n4 = re.subn(r'(PatchClashConfig\s+_effectivePatchConfig\(\s*PatchClashConfig\s+patchConfig\s*,?\s*\)\s*\{)', r'\1 if (FlClashBridge.simpleTakeover) { patchConfig = patchConfig.copyWith(mode: Mode.rule); }', st, count=1)
+ st, n1 = re.subn(r'final\s+profileBase\s*=\s*!isCustom\s*&&\s*!hasScript\s*\?\s*await\s+_core\.getProfileBase\(profileId\)\s*:\s*null;', 'final profileBase = !FlClashBridge.simpleTakeover && !isCustom && !hasScript ? await _core.getProfileBase(profileId) : null;', st, count=1)
+ hk = "if (FlClashBridge.simpleTakeover) { await FlClashBridge.ensureWhitelistLoaded(); rawConfig = Map<String, dynamic>.from(rawConfig)..remove('rule-providers'); rawConfig['rules'] = FlClashBridge.buildSimpleRules(); patchConfig = patchConfig.copyWith(mode: Mode.rule); }\n    final directory = await appPath.profilesPath;"
+ st = st.replace('final directory = await appPath.profilesPath;', hk, 1)
+ st, n2 = re.subn(r'(\bMakeRealProfileState\(\s*rules:\s*)rules,', r'\1FlClashBridge.simpleTakeover ? const <Rule>[] : rules,', st, count=1)
+ st, n3 = re.subn(r'(\baddedRules:\s*)setupState\.addedRules,', r'\1FlClashBridge.simpleTakeover ? const <Rule>[] : setupState.addedRules,', st, count=1)
+ st, n4 = re.subn(r'(PatchClashConfig\s+_effectivePatchConfig\(\s*PatchClashConfig\s+patchConfig\s*,?\s*\)\s*\{)', r'\1 if (FlClashBridge.simpleTakeover) { patchConfig = patchConfig.copyWith(mode: Mode.rule); }', st, count=1)
   assert n1 == 1 and n2 == 1 and n3 == 1 and n4 == 1
-  sa.write_text(st, encoding='utf-8')
+ sa.write_text(st, encoding='utf-8')
  hp = ROOT / 'lib/pages/home.dart'
  hs = hp.read_text(encoding='utf-8')
  if 'SimpleModeHost(' not in hs:
