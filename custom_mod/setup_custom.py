@@ -105,53 +105,41 @@ def write_det_jks(out_jks: pathlib.Path) -> None:
   kp.write_bytes(f'-----BEGIN {t1}-----\n'.encode() + base64.encodebytes(kd) + f'-----END {t1}-----\n'.encode())
   cp.write_bytes(f'-----BEGIN {t2}-----\n'.encode() + base64.encodebytes(cd) + f'-----END {t2}-----\n'.encode())
   subprocess.run(['openssl', 'pkcs12', '-export', '-in', str(cp), '-inkey', str(kp), '-name', 'flclash', '-out', str(out_jks), '-passout', 'env:KPW'], env=dict(os.environ, KPW='flclash123'), check=True)
-
 def main() -> None:
  if '--calc-version' in os.sys.argv: return calc_ver()
- ver = os.environ.get('APP_VER', '0.9.4').strip() or '0.9.4'
- code = os.environ.get('APP_CODE', '2030009401').strip() or '2030009401'
- ps = ROOT / 'pubspec.yaml'
- pt, n = re.subn(r'^version:\s*\S+', f'version: {ver}+{code}', ps.read_text(encoding='utf-8'), count=1, flags=re.MULTILINE)
- assert n == 1
- ps.write_text(pt, encoding='utf-8')
- od = ROOT / 'lib/custom'
- od.mkdir(parents=True, exist_ok=True)
- (od / 'flclash_bridge.dart').write_text(BRIDGE.replace('__APP_VER__', ver), encoding='utf-8')
- shutil.copyfile(MOD / 'smart_guardian.dart', od / 'smart_guardian.dart')
- shutil.copyfile(MOD / 'simple_workbench.dart', od / 'simple_workbench.dart')
- sa = ROOT / 'lib/providers/actions/setup.dart'
- st = sa.read_text(encoding='utf-8')
- if 'FlClashBridge.simpleTakeover' not in st:
-  pm = re.search(r"part\s+of\s+['\"]([^'\"]+)['\"]\s*;", st)
-  ia = (sa.parent / pm.group(1)).resolve() if pm else sa
-   it = ia.read_text(encoding='utf-8')
-   if 'flclash_bridge.dart' not in it:
-      it, ni = re.subn(r'^(\s*import\s+)', "import 'package:fl_clash/custom/flclash_bridge.dart';\n\\1", it, count=1, flags=re.MULTILINE)
-     assert ni == 1
-      ia.write_text(it, encoding='utf-8')
- st, n1 = re.subn(r'final\s+profileBase\s*=\s*!isCustom\s*&&\s*!hasScript\s*\?\s*await\s+_core\.getProfileBase\(profileId\)\s*:\s*null;', 'final profileBase = !FlClashBridge.simpleTakeover && !isCustom && !hasScript ? await _core.getProfileBase(profileId) : null;', st, count=1)
- hk = "if (FlClashBridge.simpleTakeover) { await FlClashBridge.ensureWhitelistLoaded(); rawConfig = Map<String, dynamic>.from(rawConfig)..remove('rule-providers'); rawConfig['rules'] = FlClashBridge.buildSimpleRules(); patchConfig = patchConfig.copyWith(mode: Mode.rule); }\n    final directory = await appPath.profilesPath;"
- st = st.replace('final directory = await appPath.profilesPath;', hk, 1)
- st, n2 = re.subn(r'(\bMakeRealProfileState\(\s*rules:\s*)rules,', r'\1FlClashBridge.simpleTakeover ? const <Rule>[] : rules,', st, count=1)
- st, n3 = re.subn(r'(\baddedRules:\s*)setupState\.addedRules,', r'\1FlClashBridge.simpleTakeover ? const <Rule>[] : setupState.addedRules,', st, count=1)
- st, n4 = re.subn(r'(PatchClashConfig\s+_effectivePatchConfig\(\s*PatchClashConfig\s+patchConfig\s*,?\s*\)\s*\{)', r'\1 if (FlClashBridge.simpleTakeover) { patchConfig = patchConfig.copyWith(mode: Mode.rule); }', st, count=1)
-  assert n1 == 1 and n2 == 1 and n3 == 1 and n4 == 1
- sa.write_text(st, encoding='utf-8')
- hp = ROOT / 'lib/pages/home.dart'
- hs = hp.read_text(encoding='utf-8')
- if 'SimpleModeHost(' not in hs:
-  hs = hs.replace("import 'package:prism_ui/prism_ui.dart';", "import 'package:fl_clash/custom/simple_workbench.dart';\nimport 'package:prism_ui/prism_ui.dart';", 1).replace('  @override\n  Widget build(BuildContext context, WidgetRef ref) {', '  @override\n  Widget build(BuildContext context, WidgetRef ref) {\n    return SimpleModeHost(originalChild: _buildOriginalHome(context, ref));\n  }\n\n  Widget _buildOriginalHome(BuildContext context, WidgetRef ref) {', 1)
-  assert 'SimpleModeHost(' in hs
-  hp.write_text(hs, encoding='utf-8')
- ad = ROOT / 'android'
- if ad.exists() and shutil.which('openssl'):
-  write_det_jks(ad / 'app/keystore.jks')
-  lp = ad / 'local.properties'
-  ex = lp.read_text(encoding='utf-8') if lp.exists() else ''
-  k1, k2 = 'store' + 'Pass' + 'word', 'key' + 'Pass' + 'word'
-  kp = [l for l in ex.splitlines() if not l.strip().startswith(('keyAlias=', k1 + '=', k2 + '='))] + ['keyAlias=flclash', f'{k1}=flclash123', f'{k2}=flclash123']
-  lp.write_text('\n'.join(kp) + '\n', encoding='utf-8')
- print(f'Wired FlClash v{ver}+{code} OK')
+  ver = os.environ.get('APP_VER', '0.9.4').strip() or '0.9.4'
+code = os.environ.get('APP_CODE', '2030009401').strip() or '2030009401'
+ps = ROOT / 'pubspec.yaml'
+pt, n = re.subn(r'^version:\s*\S+', f'version: {ver}+{code}', ps.read_text(encoding='utf-8'), count=1, flags=re.MULTILINE)
+assert n == 1
+ps.write_text(pt, encoding='utf-8')
+od = ROOT / 'lib/custom'
+od.mkdir(parents=True, exist_ok=True)
+(od / 'flclash_bridge.dart').write_text(BRIDGE.replace('__APP_VER__', ver), encoding='utf-8')
+shutil.copyfile(MOD / 'smart_guardian.dart', od / 'smart_guardian.dart')
+shutil.copyfile(MOD / 'simple_workbench.dart', od / 'simple_workbench.dart')
+ia = ROOT / 'lib/providers/action.dart'
+it, ni = re.subn(r'^(\s*import\s+)', "import 'package:fl_clash/custom/flclash_bridge.dart';\n\\1", ia.read_text(encoding='utf-8'), count=1, flags=re.MULTILINE)
+assert ni == 1
+ia.write_text(it, encoding='utf-8')
+sa = ROOT / 'lib/providers/actions/setup.dart'
+st = sa.read_text(encoding='utf-8')
+st, n1 = re.subn(r'final\s+profileBase\s*=\s*!isCustom\s*&&\s*!hasScript\s*\?\s*await\s+_core\.getProfileBase\(profileId\)\s*:\s*null;', 'final profileBase = !FlClashBridge.simpleTakeover && !isCustom && !hasScript ? await _core.getProfileBase(profileId) : null;', st, count=1)
+hk = "if (FlClashBridge.simpleTakeover) { await FlClashBridge.ensureWhitelistLoaded(); rawConfig = Map<String, dynamic>.from(rawConfig)..remove('rule-providers'); rawConfig['rules'] = FlClashBridge.buildSimpleRules(); patchConfig = patchConfig.copyWith(mode: Mode.rule); }\n    final directory = await appPath.profilesPath;"
+st = st.replace('final directory = await appPath.profilesPath;', hk, 1)
+st, n2 = re.subn(r'(\bMakeRealProfileState\(\s*rules:\s*)rules,', r'\1FlClashBridge.simpleTakeover ? const <Rule>[] : rules,', st, count=1)
+st, n3 = re.subn(r'(\baddedRules:\s*)setupState\.addedRules,', r'\1FlClashBridge.simpleTakeover ? const <Rule>[] : setupState.addedRules,', st, count=1)
+st, n4 = re.subn(r'(PatchClashConfig\s+_effectivePatchConfig\(\s*PatchClashConfig\s+patchConfig\s*,?\s*\)\s*\{)', r'\1 if (FlClashBridge.simpleTakeover) { patchConfig = patchConfig.copyWith(mode: Mode.rule); }', st, count=1)
+assert n1 == 1 and n2 == 1 and n3 == 1 and n4 == 1
+sa.write_text(st, encoding='utf-8')
+hp = ROOT / 'lib/pages/home.dart'
+hs = hp.read_text(encoding='utf-8').replace("import 'package:prism_ui/prism_ui.dart';", "import 'package:fl_clash/custom/simple_workbench.dart';\nimport 'package:prism_ui/prism_ui.dart';", 1).replace('  @override\n  Widget build(BuildContext context, WidgetRef ref) {', '  @override\n  Widget build(BuildContext context, WidgetRef ref) {\n    return SimpleModeHost(originalChild: _buildOriginalHome(context, ref));\n  }\n\n  Widget _buildOriginalHome(BuildContext context, WidgetRef ref) {', 1)
+assert 'SimpleModeHost(' in hs
+hp.write_text(hs, encoding='utf-8')
+ad = ROOT / 'android'
+if ad.exists() and shutil.which('openssl'): write_det_jks(ad / 'app/keystore.jks'); lp = ad / 'local.properties'; ex = lp.read_text(encoding='utf-8') if lp.exists() else ''; k1, k2 = 'store' + 'Pass' + 'word', 'key' + 'Pass' + 'word'; kp = [l for l in ex.splitlines() if not l.strip().startswith(('keyAlias=', k1 + '=', k2 + '='))] + ['keyAlias=flclash', f'{k1}=flclash123', f'{k2}=flclash123']; lp.write_text('\n'.join(kp) + '\n', encoding='utf-8')
+print(f'Wired FlClash v{ver}+{code} OK')
 
 if __name__ == '__main__':
  main()
+d
