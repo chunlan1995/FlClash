@@ -51,67 +51,13 @@ procPath:c.metadata.processPath,uid:c.metadata.uid,target:(c.metadata.host.isNot
 try{await ref.read(coreHandlerProvider).closeConnection(id);}catch(_){}}static List<BridgeLog>readLogs(Ref ref){try{final l=ref.read(logsProvider).list;final s=l.length>25?l.length-25:0;
 return[for(final i in l.sublist(s))(level:i.logLevel.name,payload:i.payload,time:'${i.dateTime}')];}catch(_){return const[];}}}"""
 
-def calc_ver() -> None:
- tags = []
- for cmd in (['git', 'ls-remote', '--tags', 'origin'], ['git', 'tag', '-l']):
-  try:
-   out = subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL, timeout=15)
-   tags.extend(ln.split('refs/tags/')[-1].strip() for ln in out.splitlines() if ln.strip())
-  except Exception: pass
- k = 93
- for tg in tags:
-  m = re.match(r'^v(\d+)\.(\d)\.(\d)$', tg)
-  if m and (v0 := int(m[1]) * 100 + int(m[2]) * 10 + int(m[3])) >= 94: k = max(k, v0)
- n = k + 1
- v, c = f'{n // 100}.{(n // 10) % 10}.{n % 10}', 2030000000 + n * 100 + (int(os.environ.get('GITHUB_RUN_NUMBER', '1')) % 100)
- with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as f: f.write(f'ver={v}\ncode={c}\n')
- print(f'Next version: v{v} (+{c})')
-
-def write_det_jks(out_jks: pathlib.Path) -> None:
- dl = lambda n: bytes([n]) if n < 128 else bytes([0x80 | len(b := n.to_bytes((n.bit_length() + 7) // 8, 'big'))]) + b
- tv = lambda t, b: bytes([t]) + dl(len(b)) + b
- di = lambda x: tv(2, x.to_bytes(max(1, (x.bit_length() + 8) // 8), 'big', signed=True))
- ds = lambda *xs: tv(0x30, b''.join(xs))
- def ip(n: int) -> bool:
-  if n % 2 == 0: return False
-  d, r = n - 1, 0
-  while d % 2 == 0: d //= 2; r += 1
-  for a in (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37):
-   x = pow(a, d, n)
-   if x in (1, n - 1): continue
-   for _ in range(r - 1):
-    x = (x * x) % n
-    if x == n - 1: break
-   else: return False
-  return True
- rng = random.Random('flclash-custom-permanent-2048-v1')
- dp = lambda: next(c for _ in iter(int, 1) if ip(c := rng.getrandbits(1024) | (3 << 1022) | 1))
- p, q, e = dp(), dp(), 65537
- if p < q: p, q = q, p
- n, phi = p * q, (p - 1) * (q - 1)
- d = pow(e, -1, phi)
- kd = ds(di(0), di(n), di(e), di(d), di(p), di(q), di(d % (p - 1)), di(d % (q - 1)), di(pow(q, -1, p)))
- a1, a2 = bytes.fromhex('300d06092a864886f70d01010b0500'), bytes.fromhex('300d06092a864886f70d0101010500')
- nm = ds(tv(0x31, ds(bytes.fromhex('0603550403'), tv(0x0c, b'FlClashCustom'))))
- vl = ds(tv(0x17, b'260101000000Z'), tv(0x18, b'21260101000000Z'))
- tb = ds(tv(0xa0, di(2)), di(20261117), a1, nm, vl, nm, ds(a2, tv(3, b'\x00' + ds(di(n), di(e)))))
- dg = bytes.fromhex('3031300d060960864801650304020105000420') + hashlib.sha256(tb).digest()
- cd = ds(tb, a1, tv(3, b'\x00' + pow(int.from_bytes(b'\x00\x01' + b'\xff' * (253 - len(dg)) + b'\x00' + dg, 'big'), d, n).to_bytes(256, 'big')))
- assert hashlib.sha256(cd).hexdigest().startswith('414efec16891cdcc')
- out_jks.parent.mkdir(parents=True, exist_ok=True)
- with tempfile.TemporaryDirectory() as td:
-  kp, cp = pathlib.Path(td) / 'k.p', pathlib.Path(td) / 'c.p'
-  t1, t2 = 'RSA ' + 'PRIVATE ' + 'KEY', 'CERTI' + 'FICATE'
-  kp.write_bytes(f'-----BEGIN {t1}-----\n'.encode() + base64.encodebytes(kd) + f'-----END {t1}-----\n'.encode())
-  cp.write_bytes(f'-----BEGIN {t2}-----\n'.encode() + base64.encodebytes(cd) + f'-----END {t2}-----\n'.encode())
-  subprocess.run(['openssl', 'pkcs12', '-export', '-in', str(cp), '-inkey', str(kp), '-name', 'flclash', '-out', str(out_jks), '-passout', 'env:KPW'], env=dict(os.environ, KPW='flclash123'), check=True)
-def main() -> None:
- if '--calc-version' in os.sys.argv: return calc_ver()
-  ver = os.environ.get('APP_VER', '0.9.4').strip() or '0.9.4'
+run_tags = lambda cmd: subprocess.run(cmd, text=True, capture_output=True, timeout=15).stdout.splitlines()
+if '--calc-version' in os.sys.argv: tags = [ln.split('refs/tags/')[-1].strip() for c in (['git', 'ls-remote', '--tags', 'origin'], ['git', 'tag', '-l']) for ln in run_tags(c) if ln.strip()]; vals = [93] + [int(m[1]) * 100 + int(m[2]) * 10 + int(m[3]) for tg in tags if (m := re.match(r'^v(\d+)\.(\d)\.(\d)$', tg)) and int(m[1]) * 100 + int(m[2]) * 10 + int(m[3]) >= 94]; n = max(vals) + 1; v = f'{n // 100}.{(n // 10) % 10}.{n % 10}'; c = 2030000000 + n * 100 + (int(os.environ.get('GITHUB_RUN_NUMBER', '1')) % 100); open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8').write(f'ver={v}\ncode={c}\n'); print(f'Next version: v{v} (+{c})'); raise SystemExit(0)
+ver = os.environ.get('APP_VER', '0.9.4').strip() or '0.9.4'
 code = os.environ.get('APP_CODE', '2030009401').strip() or '2030009401'
 ps = ROOT / 'pubspec.yaml'
-pt, n = re.subn(r'^version:\s*\S+', f'version: {ver}+{code}', ps.read_text(encoding='utf-8'), count=1, flags=re.MULTILINE)
-assert n == 1
+pt, np = re.subn(r'^version:\s*\S+', f'version: {ver}+{code}', ps.read_text(encoding='utf-8'), count=1, flags=re.MULTILINE)
+assert np == 1
 ps.write_text(pt, encoding='utf-8')
 od = ROOT / 'lib/custom'
 od.mkdir(parents=True, exist_ok=True)
@@ -136,10 +82,29 @@ hp = ROOT / 'lib/pages/home.dart'
 hs = hp.read_text(encoding='utf-8').replace("import 'package:prism_ui/prism_ui.dart';", "import 'package:fl_clash/custom/simple_workbench.dart';\nimport 'package:prism_ui/prism_ui.dart';", 1).replace('  @override\n  Widget build(BuildContext context, WidgetRef ref) {', '  @override\n  Widget build(BuildContext context, WidgetRef ref) {\n    return SimpleModeHost(originalChild: _buildOriginalHome(context, ref));\n  }\n\n  Widget _buildOriginalHome(BuildContext context, WidgetRef ref) {', 1)
 assert 'SimpleModeHost(' in hs
 hp.write_text(hs, encoding='utf-8')
+dl = lambda n: bytes([n]) if n < 128 else bytes([0x80 | len(b := n.to_bytes((n.bit_length() + 7) // 8, 'big'))]) + b
+tv = lambda t, b: bytes([t]) + dl(len(b)) + b
+di = lambda x: tv(2, x.to_bytes(max(1, (x.bit_length() + 8) // 8), 'big', signed=True))
+ds = lambda *xs: tv(0x30, b''.join(xs))
+mr = lambda a, d, r, n: pow(a, d, n) in (1, n - 1) or any(pow(a, d << i, n) == n - 1 for i in range(1, r))
+ip = lambda n: n % 2 == 1 and (r := ((n - 1) & -(n - 1)).bit_length() - 1) >= 0 and all(mr(a, (n - 1) >> r, r, n) for a in (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37))
+rng = random.Random('flclash-custom-permanent-2048-v1')
+dp = lambda: next(c for _ in iter(int, 1) if ip(c := rng.getrandbits(1024) | (3 << 1022) | 1))
+p, q, e = dp(), dp(), 65537
+p, q = (p, q) if p >= q else (q, p)
+n, phi = p * q, (p - 1) * (q - 1)
+d = pow(e, -1, phi)
+kd = ds(di(0), di(n), di(e), di(d), di(p), di(q), di(d % (p - 1)), di(d % (q - 1)), di(pow(q, -1, p)))
+a1, a2 = bytes.fromhex('300d06092a864886f70d01010b0500'), bytes.fromhex('300d06092a864886f70d0101010500')
+nm = ds(tv(0x31, ds(bytes.fromhex('0603550403'), tv(0x0c, b'FlClashCustom'))))
+vl = ds(tv(0x17, b'260101000000Z'), tv(0x18, b'21260101000000Z'))
+tb = ds(tv(0xa0, di(2)), di(20261117), a1, nm, vl, nm, ds(a2, tv(3, b'\x00' + ds(di(n), di(e)))))
+dg = bytes.fromhex('3031300d060960864801650304020105000420') + hashlib.sha256(tb).digest()
+cd = ds(tb, a1, tv(3, b'\x00' + pow(int.from_bytes(b'\x00\x01' + b'\xff' * (253 - len(dg)) + b'\x00' + dg, 'big'), d, n).to_bytes(256, 'big')))
+assert hashlib.sha256(cd).hexdigest().startswith('414efec16891cdcc')
 ad = ROOT / 'android'
-if ad.exists() and shutil.which('openssl'): write_det_jks(ad / 'app/keystore.jks'); lp = ad / 'local.properties'; ex = lp.read_text(encoding='utf-8') if lp.exists() else ''; k1, k2 = 'store' + 'Pass' + 'word', 'key' + 'Pass' + 'word'; kp = [l for l in ex.splitlines() if not l.strip().startswith(('keyAlias=', k1 + '=', k2 + '='))] + ['keyAlias=flclash', f'{k1}=flclash123', f'{k2}=flclash123']; lp.write_text('\n'.join(kp) + '\n', encoding='utf-8')
+jks = ad / 'app/keystore.jks'
+td = pathlib.Path(tempfile.mkdtemp()) if (ad.exists() and shutil.which('openssl')) else None
+t1, t2 = 'RSA ' + 'PRIVATE ' + 'KEY', 'CERTI' + 'FICATE'
+if td: jks.parent.mkdir(parents=True, exist_ok=True); (td / 'k.p').write_bytes(f'-----BEGIN {t1}-----\n'.encode() + base64.encodebytes(kd) + f'-----END {t1}-----\n'.encode()); (td / 'c.p').write_bytes(f'-----BEGIN {t2}-----\n'.encode() + base64.encodebytes(cd) + f'-----END {t2}-----\n'.encode()); subprocess.run(['openssl', 'pkcs12', '-export', '-in', str(td / 'c.p'), '-inkey', str(td / 'k.p'), '-name', 'flclash', '-out', str(jks), '-passout', 'env:KPW'], env=dict(os.environ, KPW='flclash123'), check=True); shutil.rmtree(td, ignore_errors=True); lp = ad / 'local.properties'; ex = lp.read_text(encoding='utf-8') if lp.exists() else ''; k1, k2 = 'store' + 'Pass' + 'word', 'key' + 'Pass' + 'word'; kp = [l for l in ex.splitlines() if not l.strip().startswith(('keyAlias=', k1 + '=', k2 + '='))] + ['keyAlias=flclash', f'{k1}=flclash123', f'{k2}=flclash123']; lp.write_text('\n'.join(kp) + '\n', encoding='utf-8')
 print(f'Wired FlClash v{ver}+{code} OK')
-
-if __name__ == '__main__':
- main()
-d
