@@ -1,286 +1,142 @@
 // ignore_for_file: require_trailing_commas, lines_longer_than_80_chars, unawaited_futures, curly_braces_in_flow_control_structures
-import 'dart:async';
-import 'dart:io';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/views/profiles/add.dart';
-import 'package:fl_clash/widgets/widgets.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:prism_ui/prism_ui.dart';
-import 'flclash_bridge.dart';
-import 'smart_guardian.dart';
-class SimpleModeHost extends ConsumerWidget {
- const SimpleModeHost({super.key, required this.originalChild});
- final Widget originalChild;
- @override
- Widget build(BuildContext context, WidgetRef ref) {
-  ref.watch(guardianProvider.select((s) => s.auto));
-  final simple = ref.watch(simpleModeProvider);
-  final backBtn = FilledButton(
-   onPressed: () => unawaited(ref.read(guardianProvider.notifier).setUi(true)),
-   child: const Text('返回极简模式（全局接管）'),
-  );
-  return Stack(children: [
-   Offstage(offstage: simple, child: originalChild),
-   if (simple) const Positioned.fill(child: SimpleWorkbenchView()),
-   if (!simple) Positioned(right: 18, bottom: 20, child: SafeArea(child: backBtn)),
-  ]);
- }
-}
-class SimpleWorkbenchView extends ConsumerStatefulWidget {
- const SimpleWorkbenchView({super.key});
- @override
- ConsumerState<SimpleWorkbenchView> createState() => _SWS();
-}
-class _SWS extends ConsumerState<SimpleWorkbenchView> {
- final _ic = TextEditingController(), _wc = TextEditingController(), _ac = TextEditingController(), _pc = TextEditingController(), _lc = TextEditingController();
- final _if = FocusNode(), _wf = FocusNode(), _af = FocusNode(), _pf = FocusNode(), _lf = FocusNode();
- LogCat? _cat;
- int _mt = 0, _rt = 0;
- String _iq = '', _wq = '', _aq = '', _pq = '', _lq = '';
- bool _busy = false;
- @override
- void dispose() {
-  for (final c in [_ic, _wc, _ac, _pc, _lc]) c.dispose();
-  for (final f in [_if, _wf, _af, _pf, _lf]) f.dispose();
-  super.dispose();
- }
- Future<void> _tog(bool run) async {
-  if (_busy) return;
-  setState(() => _busy = true);
-  try {
-   await ref.read(guardianProvider.notifier).togRun(run);
-  } finally {
-   if (mounted) setState(() => _busy = false);
-  }
- }
- Color _fg(BuildContext c) => DefaultTextStyle.of(c).style.color ?? const Color(0xFF1F2937);
- Color _mu(BuildContext c) => _fg(c).withValues(alpha: 0.62);
- ShapeDecoration _rb(Color c, double r) {
-  return ShapeDecoration(color: c, shape: RoundedSuperellipseBorder(borderRadius: BorderRadius.circular(r)));
- }
- Widget _tx(BuildContext c, String s, {bool b = false, bool cap = false, Color? col}) {
-  final base = cap ? AppTextStyle.caption1.of(c, emphasized: b) : AppTextStyle.body.of(c, emphasized: b);
-  final clr = col ?? (cap && !b ? _mu(c) : _fg(c));
-  return Text(s, maxLines: 1, overflow: TextOverflow.ellipsis, style: base.copyWith(color: clr));
- }
- Widget _cd(BuildContext c, List<Widget> ch) {
-  final col = Column(crossAxisAlignment: CrossAxisAlignment.start, spacing: 8, children: ch);
-  return Container(padding: const EdgeInsets.all(12), decoration: _rb(_fg(c).withValues(alpha: 0.045), 16), child: col);
- }
- Widget _lv<T>(BuildContext c, List<T> l, String emp, Widget Function(T) fn) {
-  if (l.isEmpty) {
-   final msg = Text(emp, style: AppTextStyle.caption1.of(c).copyWith(color: _mu(c)), textAlign: TextAlign.center);
-   return Expanded(child: Center(child: msg));
-  }
-  Widget sep(BuildContext _, int __) => const SizedBox(height: 6);
-  Widget item(BuildContext _, int i) => fn(l[i]);
-  return Expanded(child: ListView.separated(itemCount: l.length, separatorBuilder: sep, itemBuilder: item));
- }
- Widget _ch(BuildContext c, bool sel, String txt, VoidCallback tap) {
-  final cs = c.colorScheme;
-  final bg = sel ? cs.successContainer : _fg(c).withValues(alpha: 0.065);
-  final tc = sel ? cs.onSuccessContainer : _fg(c);
-  final st = AppTextStyle.subheadline.of(c, emphasized: sel).copyWith(color: tc);
-  final box = Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), alignment: Alignment.center, decoration: _rb(bg, 10), child: Text(txt, style: st));
-  return GestureDetector(onTap: tap, child: box);
- }
- Widget _sb(BuildContext c, String lb, String v) {
-  final col = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_tx(c, lb, cap: true), Text(v, style: AppTextStyle.subheadline.of(c, emphasized: true))]);
-  return Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), decoration: _rb(_fg(c).withValues(alpha: 0.06), 10), child: col);
- }
- Widget _sch(BuildContext c, TextEditingController tc, FocusNode fn, String h, String v, ValueChanged<String> chg) {
-  final fg = _fg(c);
-  final ed = EditableText(controller: tc, focusNode: fn, autocorrect: false, onChanged: chg, style: AppTextStyle.subheadline.of(c).copyWith(color: fg), cursorColor: fg, backgroundCursorColor: _mu(c));
-  final stk = Stack(alignment: Alignment.centerLeft, children: [if (v.isEmpty) _tx(c, h, col: _mu(c)), ed]);
-  final clr = GestureDetector(onTap: () { tc.clear(); chg(''); }, child: Text('×', style: AppTextStyle.headline.of(c)));
-  final row = Row(spacing: 8, children: [Expanded(child: stk), if (v.isNotEmpty) clr]);
-  final box = Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7), decoration: _rb(fg.withValues(alpha: 0.065), 10), child: row);
-  return GestureDetector(onTap: fn.requestFocus, child: box);
- }
- Widget _topBar(BuildContext c, GuardianState st, List<BridgeProfile> profs) {
-  final ntf = ref.read(guardianProvider.notifier);
-  final curP = profs.where((p) => p.selected).firstOrNull;
-  final pItems = [for (final p in profs) PopupMenuItem(glyph: p.selected ? AppGlyphs.check : null, label: p.label, onPressed: p.onSelect)];
-  final lItems = [for (final ms in const [600, 800, 1000, 1500]) PopupMenuItem(glyph: st.lim == ms ? AppGlyphs.check : null, label: ms == 1000 ? '1000ms(默认)' : '${ms}ms', onPressed: () => ntf.setLimit(ms))];
-  final acts = Wrap(spacing: 6, runSpacing: 6, crossAxisAlignment: WrapCrossAlignment.center, children: [
-   if (profs.isNotEmpty) PopupAnchor(targetBuilder: (o) => TextButton(onPressed: o, child: Text('订阅: ${curP?.label ?? "选择"} ▾')), popupBuilder: (_) => PopupMenu(items: pItems)),
-   AddProfileMenu(builder: (o) => TextButton(onPressed: o, child: const Text('+ 导入订阅'))),
-   PopupAnchor(targetBuilder: (o) => TextButton(onPressed: o, child: Text('阈值 ${st.lim}ms ▾')), popupBuilder: (_) => PopupMenu(items: lItems)),
-   TextButton(onPressed: () => unawaited(ntf.setUi(false)), child: const Text('完整面板')),
-  ]);
-  final ttl = Text('FlClash · 极简智控版 v${FlClashBridge.appVersion}', style: AppTextStyle.headline.of(c, emphasized: true));
-  final row = Wrap(alignment: WrapAlignment.spaceBetween, crossAxisAlignment: WrapCrossAlignment.center, spacing: 10, runSpacing: 6, children: [ttl, acts]);
-  return Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 4), child: row);
- }
- Widget _heroCard(BuildContext c, GuardianState st, bool run, bool wide) {
-  final cs = c.colorScheme, ntf = ref.read(guardianProvider.notifier), d = st.ms, lsw = st.sws.firstOrNull;
-  final dS = !run ? '未启动' : (d < 0 ? '超时(>${st.lim}ms)' : (d == 0 ? '待测速' : '${d}ms'));
-  final cIp = (st.meta != null && st.meta!.ip.isNotEmpty) ? st.meta!.ip : ((st.meta != null && st.meta!.raw.isNotEmpty) ? st.meta!.raw : (st.node.isEmpty ? '未选择' : '解析中...'));
-  final btn = FilledButton(onPressed: _busy ? null : () => _tog(run), child: Text(_busy ? '切换中...' : (run ? '● 全局接管中（点击停止）' : '▶ 一键开启全局接管')));
-  final subClr = (!run || (d >= 0 && d < st.lim)) ? _mu(c) : cs.onErrorContainer;
-  final info = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-   _tx(c, '当前选中 IP: $cIp  ${st.regLbl}', b: true),
-   _tx(c, '线路: ${st.node.isEmpty ? "自动" : st.node} · 延迟: $dS · 网段: ${st.meta?.s24 ?? "同段保持"} · 已无视订阅规则', cap: true, col: subClr),
-  ]);
-  final left = Row(mainAxisSize: MainAxisSize.min, spacing: 12, children: [btn, Flexible(child: info)]);
-  final stats = Wrap(spacing: 8, runSpacing: 6, children: [
-   _sb(c, '实时上行', '↑ ${fmtRate(st.upR)}'),
-   _sb(c, '实时下行', '↓ ${fmtRate(st.dnR)}'),
-   _sb(c, '当次总流量', '${fmtBytes(st.tot)} (↑${fmtBytes(st.up)}/↓${fmtBytes(st.dn)})'),
-  ]);
-  final head = Wrap(alignment: WrapAlignment.spaceBetween, crossAxisAlignment: WrapCrossAlignment.center, spacing: 12, runSpacing: 8, children: [left, stats]);
-  final rcs = [for (final r in st.regs) _ch(c, r.code == st.reg, '${r.label} (${r.nodes.length})', () => unawaited(ntf.selReg(r.code)))];
-  final regBar = st.regs.isEmpty
-    ? _tx(c, '尚未检测到订阅节点，请点击右上角「+ 导入订阅」自动聚合国家与区域', cap: true)
-    : (wide ? Wrap(spacing: 8, runSpacing: 6, children: rcs) : SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(spacing: 8, children: rcs)));
-  final ctrls = Wrap(spacing: 8, runSpacing: 6, crossAxisAlignment: WrapCrossAlignment.center, children: [
-   _ch(c, true, '✓ 无视订阅规则·白名单直连 (${st.wl.length})', () => setState(() { _rt = 0; _mt = 1; })),
-   if (!Platform.isAndroid) _ch(c, st.tun, st.tun ? '✓ TUN网卡全进程接管' : '仅系统代理', () => unawaited(ntf.setTun(!st.tun))),
-   _ch(c, st.auto, st.auto ? '✓ 超时同段转接(${st.lim}ms)' : '超时转接已关', () => ntf.setAuto(!st.auto)),
-   _ch(c, st.lock, st.lock ? '✓ 锁定所选区域' : '允许跨区兜底', () => ntf.setLock(!st.lock)),
-   TextButton(onPressed: st.busy ? null : () => unawaited(ntf.chkNow()), child: Text(st.busy ? '检测中...' : '检测当前IP')),
-   if (lsw != null) _tx(c, '最近转接: ${lsw.from} → ${lsw.to} (${lsw.tier.label}, ${lsw.ms}ms)', cap: true, b: true),
-  ]);
-  return _cd(c, [head, regBar, ctrls]);
- }
- @override
- Widget build(BuildContext context) {
-  final cs = context.colorScheme, st = ref.watch(guardianProvider);
-  final run = FlClashBridge.watchRunning(ref), profs = FlClashBridge.watchProfiles(ref);
-  Widget builder(BuildContext ctx, BoxConstraints box) {
-   final wide = box.maxWidth >= 900;
-   final mTabs = Row(spacing: 6, children: [
-    Expanded(child: _ch(ctx, _mt == 0, '区域IP(${st.opts.length})', () => setState(() => _mt = 0))),
-    Expanded(child: _ch(ctx, _mt == 1, '直连(${st.wl.length})', () => setState(() => _mt = 1))),
-    Expanded(child: _ch(ctx, _mt == 2, '进程(${st.procs.length})', () => setState(() => _mt = 2))),
-    Expanded(child: _ch(ctx, _mt == 3, '日志(${st.logs.length})', () => setState(() => _mt = 3))),
-   ]);
-   final wideRow = Row(spacing: 12, children: [Expanded(flex: 5, child: _ipP(ctx, st)), Expanded(flex: 6, child: _rP(ctx, st))]);
-   final mobPane = _mt == 0 ? _ipP(ctx, st) : (_mt == 1 ? _wP(ctx, st) : (_mt == 2 ? _pP(ctx, st) : _lP(ctx, st)));
-   final bodyCol = Column(spacing: 10, children: [
-    _heroCard(ctx, st, run, wide),
-    if (!wide) mTabs,
-    Expanded(child: wide ? wideRow : mobPane),
-   ]);
-   final bodyPad = Padding(padding: const EdgeInsets.fromLTRB(16, 4, 16, 12), child: bodyCol);
-   return Column(children: [_topBar(ctx, st, profs), Expanded(child: bodyPad)]);
-  }
-  return Surface(color: SurfaceLevel.page.colorOf(cs), child: SafeArea(child: LayoutBuilder(builder: builder)));
- }
- Widget _rP(BuildContext c, GuardianState st) {
-  final tabs = Row(spacing: 8, children: [
-   Expanded(child: _ch(c, _rt == 0, '直连放通白名单 (${st.wl.length})', () => setState(() => _rt = 0))),
-   Expanded(child: _ch(c, _rt == 1, '进程流量监控 (${st.procs.length})', () => setState(() => _rt = 1))),
-   Expanded(child: _ch(c, _rt == 2, '清晰日志 (${st.logs.length})', () => setState(() => _rt = 2))),
-  ]);
-  final pane = _rt == 0 ? _wP(c, st) : (_rt == 1 ? _pP(c, st) : _lP(c, st));
-  return Column(spacing: 8, children: [tabs, Expanded(child: pane)]);
- }
- Widget _wTag(BuildContext c, DirectEntry w) {
-  final cs = c.colorScheme, ntf = ref.read(guardianProvider.notifier);
-  final box = Container(padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4), decoration: _rb(cs.successContainer, 8), child: _tx(c, '✓ ${w.label} ×', cap: true, b: true, col: cs.onSuccessContainer));
-  return GestureDetector(onTap: () => unawaited(ntf.rmDir(w.id)), child: box);
- }
- Widget _appRow(BuildContext c, InstalledApp a) {
-  final cs = c.colorScheme, ntf = ref.read(guardianProvider.notifier), on = ntf.isDir(a.pkg, '', a.pkg);
-  final bg = on ? cs.successContainer.withValues(alpha: 0.5) : _fg(c).withValues(alpha: 0.065);
-  final info = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_tx(c, a.label, b: true), _tx(c, a.pkg, cap: true)]);
-  final row = Row(children: [Expanded(child: info), _tx(c, on ? '✓ 直连放通' : '设为直连', cap: true, b: true, col: on ? cs.onSuccessContainer : _fg(c))]);
-  final box = Container(padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8), decoration: _rb(bg, 10), child: row);
-  return GestureDetector(onTap: () => unawaited(ntf.togDir(label: a.label, exe: a.pkg, pkg: a.pkg)), child: box);
- }
- Widget _procPickRow(BuildContext c, ProcStat p) {
-  final cs = c.colorScheme, ntf = ref.read(guardianProvider.notifier);
-  final bg = p.direct ? cs.successContainer.withValues(alpha: 0.5) : _fg(c).withValues(alpha: 0.065);
-  final info = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_tx(c, p.name, b: true), _tx(c, p.path.isNotEmpty ? p.path : p.rawExe, cap: true)]);
-  final row = Row(children: [Expanded(child: info), _tx(c, p.direct ? '✓ 已直连放通' : '设为直连放通', cap: true, b: true, col: p.direct ? cs.onSuccessContainer : _fg(c))]);
-  final box = Container(padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8), decoration: _rb(bg, 10), child: row);
-  return GestureDetector(onTap: () => unawaited(ntf.togDir(label: p.name, exe: p.rawExe, path: p.path, pkg: p.pkg)), child: box);
- }
- Widget _wP(BuildContext c, GuardianState st) {
-  final ntf = ref.read(guardianProvider.notifier), q = _aq.trim().toLowerCase();
-  final hint = Platform.isAndroid ? '输入包名(如 com.tencent.mm)...' : '输入进程名(如 WeChat.exe)或应用目录...';
-  final addBtn = FilledButton(onPressed: _wq.trim().isEmpty ? null : () { final v = _wq; _wc.clear(); setState(() => _wq = ''); unawaited(ntf.addDir(v)); }, child: const Text('+ 添加直连'));
-  final addRow = Row(spacing: 8, children: [Expanded(child: _sch(c, _wc, _wf, hint, _wq, (v) => setState(() => _wq = v))), addBtn]);
-  final tagsWrap = Wrap(spacing: 6, runSpacing: 6, children: [for (final w in st.wl) _wTag(c, w)]);
-  final tagsBox = ConstrainedBox(constraints: const BoxConstraints(maxHeight: 84), child: SingleChildScrollView(child: tagsWrap));
-  final preChips = [for (final (l, ex) in GuardianNotifier.presets) _ch(c, ntf.isDir(ex, '', ''), ntf.isDir(ex, '', '') ? '✓ $l' : '+ $l', () => unawaited(ntf.togDir(label: l, exe: ex)))];
-  final preBar = SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(spacing: 6, children: preChips));
-  final sHint = Platform.isAndroid ? '搜索本机应用勾选直连放通...' : '搜索活跃进程一键设为直连...';
-  final sRow = Row(spacing: 8, children: [
-   Expanded(child: _sch(c, _ac, _af, sHint, _aq, (v) => setState(() => _aq = v))),
-   if (Platform.isAndroid) TextButton(onPressed: () => unawaited(ntf.ldApps()), child: const Text('刷新应用')),
-  ]);
-  final apps = q.isEmpty ? st.apps : st.apps.where((a) => a.label.toLowerCase().contains(q) || a.pkg.toLowerCase().contains(q)).toList();
-  final procs = st.procs.where((p) => p.rawExe.isNotEmpty && (q.isEmpty || p.name.toLowerCase().contains(q) || p.path.toLowerCase().contains(q))).toList();
-  final list = Platform.isAndroid
-    ? _lv(c, apps, '点击「刷新应用」读取本机应用或在上方输入包名', (a) => _appRow(c, a))
-    : _lv(c, procs, '开启代理后产生流量的本地进程及目录会自动列出，也可点击上方常用软件或输入目录添加', (p) => _procPickRow(c, p));
-  return _cd(c, [_tx(c, '直连放通白名单 · 已放通应用的进程/子进程/线程流量直连不走代理', b: true), addRow, if (st.wl.isNotEmpty) tagsBox, if (!Platform.isAndroid) preBar, sRow, list]);
- }
- Widget _ipRow(BuildContext c, GuardianState st, RegionIpOpt o) {
-  final cs = c.colorScheme, ntf = ref.read(guardianProvider.notifier);
-  final ips = o.ip.isNotEmpty ? o.ip : (o.raw.isNotEmpty ? o.raw : '点击切换解析 IP');
-  final dl = o.ms > 0 ? '${o.ms}ms' : (o.ms < 0 ? '超时' : '待测');
-  final bg = o.sel ? cs.successContainer.withValues(alpha: 0.55) : _fg(c).withValues(alpha: 0.065);
-  final stClr = o.ms < 0 ? cs.onErrorContainer : (o.sel ? cs.onSuccessContainer : _fg(c));
-  final top = Row(children: [
-   Expanded(child: _tx(c, 'IP: $ips', b: true, col: o.sel ? cs.onSuccessContainer : _fg(c))),
-   _tx(c, '$dl · ${o.sel ? "✓ 当前选中" : (o.sticky ? "本区记忆" : "点击固定")}', cap: true, b: true, col: stClr),
-  ]);
-  final sub = _tx(c, '线路: ${o.node}${o.s24 != null ? " · 网段: ${o.s24}" : ""}', cap: true);
-  final col = Column(crossAxisAlignment: CrossAxisAlignment.start, spacing: 2, children: [top, sub]);
-  final box = Container(padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8), decoration: _rb(bg, 10), child: col);
-  return GestureDetector(onTap: () => unawaited(ntf.pickNode(st.grp, o.node)), child: box);
- }
- Widget _ipP(BuildContext c, GuardianState st) {
-  final ntf = ref.read(guardianProvider.notifier), q = _iq.trim().toLowerCase();
-  final l = q.isEmpty ? st.opts : st.opts.where((o) => o.ip.toLowerCase().contains(q) || o.raw.toLowerCase().contains(q) || o.node.toLowerCase().contains(q) || (o.s24?.toLowerCase().contains(q) ?? false)).toList();
-  final hdr = Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-   Expanded(child: _tx(c, '${st.regLbl.isEmpty ? "当前区域" : st.regLbl} · 全部可选 IP (${st.opts.length})', b: true)),
-   TextButton(onPressed: st.busy ? null : () => unawaited(ntf.probReg()), child: Text(st.busy ? '测速中...' : '测速本区IP')),
-  ]);
-  final sch = _sch(c, _ic, _if, '搜索本区 IP / 网段 / 线路名...', _iq, (v) => setState(() => _iq = v));
-  return _cd(c, [hdr, sch, _lv(c, l, st.regs.isEmpty ? '导入订阅后自动展示区域全部 IP' : '无匹配 IP', (o) => _ipRow(c, st, o))]);
- }
- Widget _pRow(BuildContext c, ProcStat p, int tot) {
-  final cs = c.colorScheme, ntf = ref.read(guardianProvider.notifier), sum = p.up + p.dn;
-  final bg = p.direct ? cs.successContainer.withValues(alpha: 0.35) : _fg(c).withValues(alpha: 0.065);
-  final dBg = p.direct ? cs.successContainer : _fg(c).withValues(alpha: 0.1);
-  final dTag = Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: _rb(dBg, 7), child: _tx(c, p.direct ? '✓直连' : '直连放通', cap: true, b: true, col: p.direct ? cs.onSuccessContainer : _fg(c)));
-  final dBtn = GestureDetector(onTap: () => unawaited(ntf.togDir(label: p.name, exe: p.rawExe, path: p.path, pkg: p.pkg)), child: dTag);
-  final top = Row(spacing: 8, children: [
-   Expanded(child: _tx(c, '${p.name} (${p.conns}连接 · ${p.exit.isEmpty ? "GLOBAL" : p.exit})', b: true)),
-   _tx(c, '↑${fmtRate(p.upR)} ↓${fmtRate(p.dnR)}', cap: true, b: true),
-   if (p.rawExe.isNotEmpty || p.pkg.isNotEmpty) dBtn,
-  ]);
-  final mid = Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [_tx(c, '累计 ↑${fmtBytes(p.up)} · ↓${fmtBytes(p.dn)}', cap: true), _tx(c, '总计 ${fmtBytes(sum)}', cap: true, b: true)]);
-  final fill = FractionallySizedBox(alignment: Alignment.centerLeft, widthFactor: (sum / tot).clamp(0.0, 1.0), child: Container(decoration: _rb(cs.onSuccessContainer, 2)));
-  final bar = Container(height: 4, width: double.infinity, decoration: _rb(_fg(c).withValues(alpha: 0.08), 2), child: fill);
-  return Container(padding: const EdgeInsets.all(10), decoration: _rb(bg, 10), child: Column(crossAxisAlignment: CrossAxisAlignment.start, spacing: 4, children: [top, mid, bar]));
- }
- Widget _pP(BuildContext c, GuardianState st) {
-  final ntf = ref.read(guardianProvider.notifier), q = _pq.trim().toLowerCase(), tot = st.tot <= 0 ? 1 : st.tot;
-  final l = q.isEmpty ? st.procs : st.procs.where((p) => p.name.toLowerCase().contains(q) || p.exit.toLowerCase().contains(q)).toList();
-  final hdr = Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Expanded(child: _tx(c, '进程流量 · ↑${fmtBytes(st.up)} / ↓${fmtBytes(st.dn)}', b: true)), TextButton(onPressed: ntf.rstTrf, child: const Text('清零'))]);
-  return _cd(c, [hdr, _sch(c, _pc, _pf, '搜索进程名 / 包名 / 出口...', _pq, (v) => setState(() => _pq = v)), _lv(c, l, '开启全局接管后实时显示各进程上下行并支持一键直连', (p) => _pRow(c, p, tot))]);
- }
- Widget _lRow(BuildContext c, LogItem e) {
-  final cs = c.colorScheme;
-  final bg = e.hot ? cs.successContainer.withValues(alpha: 0.45) : _fg(c).withValues(alpha: 0.065);
-  final det = Text(e.detail, style: AppTextStyle.caption1.of(c).copyWith(color: _mu(c)));
-  final col = Column(crossAxisAlignment: CrossAxisAlignment.start, spacing: 2, children: [_tx(c, '[${fmtTime(e.time)}][${e.cat.label}] ${e.title}', cap: true, b: true), det]);
-  return Container(padding: const EdgeInsets.all(8), decoration: _rb(bg, 10), child: col);
- }
- Widget _lP(BuildContext c, GuardianState st) {
-  final ntf = ref.read(guardianProvider.notifier), q = _lq.trim().toLowerCase();
-  final l = st.logs.where((e) => (_cat == null || e.cat == _cat) && (q.isEmpty || e.title.toLowerCase().contains(q) || e.detail.toLowerCase().contains(q))).toList();
-  void copyAll() => unawaited(Clipboard.setData(ClipboardData(text: l.map((e) => '[${fmtTime(e.time)}][${e.cat.label}] ${e.title} | ${e.detail}').join('\n'))));
-  final btns = Row(mainAxisSize: MainAxisSize.min, children: [TextButton(onPressed: l.isEmpty ? null : copyAll, child: const Text('复制')), TextButton(onPressed: ntf.clrLog, child: const Text('清空'))]);
-  final hdr = Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [_tx(c, '明确清晰运行日志', b: true), btns]);
-  final cats = Wrap(spacing: 6, runSpacing: 6, children: [_ch(c, _cat == null, '全部', () => setState(() => _cat = null)), for (final ct in LogCat.values) _ch(c, _cat == ct, ct.label, () => setState(() => _cat = ct))]);
-  return _cd(c, [hdr, cats, _sch(c, _lc, _lf, '筛选节点名、IP段、直连进程或告警...', _lq, (v) => setState(() => _lq = v)), _lv(c, l, '暂无日志', (e) => _lRow(c, e))]);
- }
-}
+import'dart:async';import'dart:io';import'dart:math'as math;import'package:fl_clash/ui/icons/icons.dart';import'package:fl_clash/views/profiles/add.dart';import'package:fl_clash/widgets/widgets.dart';import'package:flutter/services.dart';
+import'package:flutter/widgets.dart';import'package:flutter_riverpod/flutter_riverpod.dart';import'package:prism_ui/prism_ui.dart';import'flclash_bridge.dart';import'smart_guardian.dart';const _cB=Color(0xFF2563EB),_cP=Color(0xFF10B981),_cD=Color(0xFF0EA5E9),_cV=Color(0xFF8B5CF6),_cW=Color(0xFFF59E0B),_cN=Color(0xFF64748B),_cWht=Color(0xFFFFFFFF);class SimpleModeHost extends ConsumerWidget{
+const SimpleModeHost({super.key,required this.originalChild});final Widget originalChild;@override Widget build(BuildContext context,WidgetRef ref){ref.watch(guardianProvider.select((s)=>s.auto));final simple=ref.watch(simpleModeProvider);
+return Stack(children:[Offstage(offstage:simple,child:originalChild),if(simple)const Positioned.fill(child:SimpleWorkbenchView()),if(!simple)Positioned(right:18,bottom:20,child:SafeArea(child:FilledButton(
+onPressed:()=>unawaited(ref.read(guardianProvider.notifier).setUi(true)),child:const Text('返回极简智控'),),),),]);}}class _WavePainter extends CustomPainter{const _WavePainter({required this.points,required this.showFallback,required this.gridColor,
+});final List<WavePt>points;final bool showFallback;final Color gridColor;void _drawTrack(Canvas canvas,Size size,List<int>vals,double maxV,Color color){if(vals.length<2)return;final path=Path();final h=size.height;final w=size.width;
+double px(int i)=>(i/(vals.length-1))*w;double py(int i)=>h-6-((vals[i]/maxV).clamp(0.0,1.0)*(h-14));path.moveTo(px(0),py(0));for(var i=1;i<vals.length;i++){final x0=px(i-1),y0=py(i-1);final x1=px(i),y1=py(i);final cx=(x0+x1)*0.5;
+path.cubicTo(cx,y0,cx,y1,x1,y1);}final stroke=Paint()..color=color..style=PaintingStyle.stroke..strokeWidth=2.1..strokeCap=StrokeCap.round;canvas.drawPath(path,stroke);final fillPath=Path.from(path)..lineTo(w,h)..lineTo(0,h)..close();
+final shader=LinearGradient(begin:Alignment.topCenter,end:Alignment.bottomCenter,colors:[color.withValues(alpha:0.22),color.withValues(alpha:0.0)],).createShader(Rect.fromLTWH(0,0,w,h));canvas.drawPath(fillPath,Paint()..shader=shader);}@override
+void paint(Canvas canvas,Size size){final gp=Paint()..color=gridColor..strokeWidth=1.0;for(var i=1;i<=2;i++){final y=(size.height/3.0)*i;canvas.drawLine(Offset(0,y),Offset(size.width,y),gp);}var peak=64*1024;for(final p in points){
+peak=math.max(peak,math.max(p.vBps,math.max(showFallback?p.fBps:0,p.dBps)));}final maxV=peak*1.15;_drawTrack(canvas,size,[for(final p in points)p.dBps],maxV,_cD);if(showFallback){
+_drawTrack(canvas,size,[for(final p in points)p.fBps],maxV,_cP);}_drawTrack(canvas,size,[for(final p in points)p.vBps],maxV,_cV);}@override bool shouldRepaint(covariant _WavePainter old)=>true;}
+class SimpleWorkbenchView extends ConsumerStatefulWidget{const SimpleWorkbenchView({super.key});@override ConsumerState<SimpleWorkbenchView>createState()=>_SimpleWorkbenchState();}
+class _SimpleWorkbenchState extends ConsumerState<SimpleWorkbenchView>{final _ipCtrl=TextEditingController();final _vSC=TextEditingController();final _cDomCtrl=TextEditingController();final _wAddCtrl=TextEditingController();
+final _aSC=TextEditingController();final _ipFocus=FocusNode();final _vSF=FocusNode();final _cDomFocus=FocusNode();final _wAddFocus=FocusNode();final _aSF=FocusNode();bool _busy=false;bool _vTl=false;bool _addAppOpen=false;bool _aPk=false;
+bool _rPv=false;String _ipQ='',_vQ='',_cDom='',_wIn='',_appQ='';String _customExit='US';String _appFilter='all';LogCat?_logCat;static const _vendorExitOpts=<String>['US','JP','SG','HK','TW','KR','FOLLOW'];
+static const _subExitOpts=<String>['US','JP','SG','HK','TW','KR','DIRECT'];@override void dispose(){for(final c in[_ipCtrl,_vSC,_cDomCtrl,_wAddCtrl,_aSC])c.dispose();for(final f in[_ipFocus,_vSF,_cDomFocus,_wAddFocus,_aSF])f.dispose();
+super.dispose();}Future<void>_toggleRun(bool run)async{if(_busy)return;setState(()=>_busy=true);try{await ref.read(guardianProvider.notifier).togRun(run);}finally{if(mounted)setState(()=>_busy=false);}}
+Color _fg(BuildContext c)=>DefaultTextStyle.of(c).style.color??const Color(0xFF0F172A);Color _mu(BuildContext c)=>_fg(c).withValues(alpha:0.58);Color _cardBg(BuildContext c)=>_fg(c).withValues(alpha:0.042);
+Color _subBg(BuildContext c)=>_fg(c).withValues(alpha:0.068);ShapeDecoration _rBox(Color bg,double r,{Color?border})=>ShapeDecoration(color:bg,shape:RoundedSuperellipseBorder(borderRadius:BorderRadius.circular(r),
+side:border!=null?BorderSide(color:border,width:1):BorderSide.none,),);Widget _txt(BuildContext c,String s,{bool b=false,bool cap=false,Color?col,int maxLines=1}){
+final st=cap?AppTextStyle.caption1.of(c,emphasized:b):AppTextStyle.subheadline.of(c,emphasized:b);return Text(s,maxLines:maxLines,overflow:TextOverflow.ellipsis,style:st.copyWith(color:col??(cap&&!b?_mu(c):_fg(c))));}
+Widget _badge(BuildContext c,String text,Color accent)=>Container(padding:const EdgeInsets.symmetric(horizontal:8,vertical:3),decoration:_rBox(accent.withValues(alpha:0.14),99),
+child:Text(text,style:AppTextStyle.caption1.of(c,emphasized:true).copyWith(color:accent)),);Widget _pBtn(BuildContext c,String label,VoidCallback?onTap,{bool active=false,Color?activeColor}){final ac=activeColor??_cB;
+return GestureDetector(onTap:onTap,child:Container(padding:const EdgeInsets.symmetric(horizontal:10,vertical:5),decoration:_rBox(active?ac.withValues(alpha:0.15):_subBg(c),99,border:active?ac.withValues(alpha:0.5):null),child:Text(label,
+style:AppTextStyle.caption1.of(c,emphasized:true).copyWith(color:active?ac:_fg(c).withValues(alpha:onTap==null?0.38:0.86)),),),);}Widget _sw(bool value,Color activeColor,VoidCallback onTap)=>GestureDetector(onTap:onTap,child:AnimatedContainer(
+duration:const Duration(milliseconds:170),width:40,height:23,padding:const EdgeInsets.all(2.5),alignment:value?Alignment.centerRight:Alignment.centerLeft,decoration:_rBox(value?activeColor:const Color(0xFF94A3B8).withValues(alpha:0.38),99),
+child:Container(width:18,height:18,decoration:_rBox(_cWht,99)),),);Widget _inp(BuildContext c,TextEditingController tc,FocusNode fn,String hint,String val,ValueChanged<String>onChanged){final fg=_fg(c);return GestureDetector(
+onTap:fn.requestFocus,child:Container(padding:const EdgeInsets.symmetric(horizontal:11,vertical:7),decoration:_rBox(_subBg(c),11,border:_fg(c).withValues(alpha:0.10)),child:Row(spacing:8,children:[Expanded(
+child:Stack(alignment:Alignment.centerLeft,children:[if(val.isEmpty)_txt(c,hint,cap:true,col:_mu(c)),EditableText(controller:tc,focusNode:fn,autocorrect:false,onChanged:onChanged,style:AppTextStyle.subheadline.of(c).copyWith(color:fg),
+cursorColor:fg,backgroundCursorColor:_mu(c),),]),),if(val.isNotEmpty)GestureDetector(onTap:(){tc.clear();onChanged('');},child:Text('×',style:AppTextStyle.body.of(c,emphasized:true).copyWith(color:_mu(c))),),]),),);}
+Widget _exPill(BuildContext c,String currentCode,List<String>codes,ValueChanged<String>onPick){return PopupAnchor(targetBuilder:(open)=>_pBtn(c,'${FlClashBridge.regLblOf(currentCode)} ▾',open),popupBuilder:(_)=>PopupMenu(items:[
+for(final code in codes)PopupMenuItem(glyph:code==currentCode?AppGlyphs.check:null,label:FlClashBridge.regLblOf(code),onPressed:()=>onPick(code),),],),);}
+Widget _hdr(BuildContext c,GuardianState st,bool run,bool isDesktop,List<BridgeProfile>profs){final ntf=ref.read(guardianProvider.notifier);final curP=profs.where((p)=>p.selected).firstOrNull;return Container(
+padding:EdgeInsets.symmetric(horizontal:isDesktop?18:14,vertical:10),decoration:_rBox(_fg(c).withValues(alpha:0.025),0),child:Wrap(alignment:WrapAlignment.spaceBetween,crossAxisAlignment:WrapCrossAlignment.center,spacing:8,runSpacing:6,
+children:[Row(mainAxisSize:MainAxisSize.min,spacing:9,children:[Container(width:30,height:30,alignment:Alignment.center,decoration:_rBox(_cB,9),
+child:Text('F',style:AppTextStyle.subheadline.of(c,emphasized:true).copyWith(color:_cWht)),),Text('极简智控 v${FlClashBridge.appVersion}',style:AppTextStyle.headline.of(c,emphasized:true)),if(curP!=null)PopupAnchor(
+targetBuilder:(open)=>_pBtn(c,'${curP.label} ▾',open),popupBuilder:(_)=>PopupMenu(items:[for(final p in profs)PopupMenuItem(glyph:p.selected?AppGlyphs.check:null,label:p.label,onPressed:p.onSelect),],),),]),
+Wrap(spacing:6,runSpacing:6,crossAxisAlignment:WrapCrossAlignment.center,children:[AddProfileMenu(builder:(open)=>_pBtn(c,'+ 订阅',open)),_pBtn(c,'完整原版 ↗',()=>unawaited(ntf.setUi(false))),if(isDesktop)FilledButton(
+onPressed:_busy?null:()=>_toggleRun(run),child:Text(_busy?'切换中...':(run?'● 运行中 ${fmtDur(st.runSec)}':'▶ 开启接管')),),]),],),);}Widget _tCard(BuildContext c,GuardianState st,bool run){final ntf=ref.read(guardianProvider.notifier);
+final probeStr=!run?'--':(st.ms<0?'超时':(st.ms==0?'待测':'${st.ms} ms'));final probeBad=run&&(st.ms<0||st.ms>=st.lim);Widget dotLeg(String lbl,Color col,double op)=>Opacity(opacity:op,child:Row(mainAxisSize:MainAxisSize.min,spacing:4,children:[
+Container(width:7,height:7,decoration:_rBox(col,99)),_txt(c,lbl,cap:true),]),);return Container(padding:const EdgeInsets.all(15),decoration:_rBox(_cardBg(c),20,border:_fg(c).withValues(alpha:0.07)),
+child:Column(crossAxisAlignment:CrossAxisAlignment.start,spacing:10,children:[Wrap(alignment:WrapAlignment.spaceBetween,crossAxisAlignment:WrapCrossAlignment.center,spacing:10,runSpacing:6,children:[
+Row(mainAxisSize:MainAxisSize.min,crossAxisAlignment:CrossAxisAlignment.baseline,textBaseline:TextBaseline.alphabetic,spacing:12,children:[Text('↓ ${fmtRate(st.dnR)}',style:AppTextStyle.title2.of(c,emphasized:true)),
+_txt(c,'↑ ${fmtRate(st.upR)}',cap:true,b:true),]),Wrap(spacing:8,children:[dotLeg('厂商',_cV,1.0),dotLeg('兜底',_cP,st.fbDir?0.35:1.0),dotLeg('直连',_cD,1.0),]),]),SizedBox(height:98,
+width:double.infinity,child:CustomPaint(painter:_WavePainter(points:st.wave,showFallback:!st.fbDir,gridColor:_fg(c).withValues(alpha:0.06),),),),
+Wrap(alignment:WrapAlignment.spaceBetween,crossAxisAlignment:WrapCrossAlignment.center,spacing:8,runSpacing:6,children:[Row(mainAxisSize:MainAxisSize.min,spacing:6,children:[
+_txt(c,'代理 ${fmtBytes(st.pxB)} · 直连 ${fmtBytes(st.drB)}',cap:true,b:true),_pBtn(c,'清零',ntf.rstTrf),]),Wrap(spacing:6,crossAxisAlignment:WrapCrossAlignment.center,children:[_txt(c,'内存 ${st.memMB} MB · 204探测 ',cap:true),
+_txt(c,probeStr,cap:true,b:true,col:probeBad?const Color(0xFFEF4444):_cP),_pBtn(c,st.busy?'...':'测速',st.busy?null:()=>unawaited(ntf.chkNow())),if(!Platform.isAndroid)
+_pBtn(c,st.tun?'TUN全接管':'系统代理',()=>unawaited(ntf.setTun(!st.tun)),active:st.tun,activeColor:_cP),]),]),]),);}Widget _fCard(BuildContext c,GuardianState st,bool isCompact){final ntf=ref.read(guardianProvider.notifier);
+final isDirect=st.fbDir;final curIp=(st.meta!=null&&st.meta!.ip.isNotEmpty)?st.meta!.ip:((st.meta!=null&&st.meta!.raw.isNotEmpty)?st.meta!.raw:(st.node.isEmpty?'待选节点':st.node));
+Widget modeTab(String title,bool active,Color activeCol,VoidCallback tap)=>Expanded(child:GestureDetector(onTap:tap,child:Container(padding:const EdgeInsets.symmetric(vertical:8,horizontal:8),alignment:Alignment.center,
+decoration:_rBox(active?_fg(c).withValues(alpha:0.09):const Color(0x00000000),10,border:active?activeCol.withValues(alpha:0.55):null),
+child:Text(title,maxLines:1,overflow:TextOverflow.ellipsis,style:AppTextStyle.caption1.of(c,emphasized:true).copyWith(color:active?activeCol:_mu(c))),),),);final q=_ipQ.trim().toLowerCase();final filteredOpts=q.isEmpty?st.opts
+:st.opts.where((o)=>o.ip.toLowerCase().contains(q)||o.node.toLowerCase().contains(q)||(o.s24?.toLowerCase().contains(q)??false)).toList();return Container(padding:const EdgeInsets.all(15),
+decoration:_rBox(_cardBg(c),20,border:_fg(c).withValues(alpha:0.07)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,spacing:10,children:[Row(mainAxisAlignment:MainAxisAlignment.spaceBetween,children:[_txt(c,'🧭 未命中流量默认出口',b:true),
+_badge(c,isDirect?'MATCH,DIRECT':'MATCH,${st.reg}-STICKY',isDirect?_cD:_cP),]),Container(padding:const EdgeInsets.all(3),decoration:_rBox(_subBg(c),13),child:Row(spacing:4,children:[
+modeTab('🌐 其余流量走代理',!isDirect,_cP,()=>unawaited(ntf.setFbDir(false))),modeTab('🛡 仅代理所选厂商 (直连)',isDirect,_cD,()=>unawaited(ntf.setFbDir(true))),]),),if(isDirect)Container(padding:const EdgeInsets.all(12),
+decoration:_rBox(_cD.withValues(alpha:0.11),14,border:_cD.withValues(alpha:0.30)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,spacing:4,children:[
+_txt(c,'🛡 全局兜底已设为物理直连（已自动收起基准国家选择）',b:true,col:const Color(0xFF0284C7)),_txt(c,'本机仅对下方已开启的特定厂商生态启用专属代理，其余日常与国内流量全部直接走物理网卡直连。',cap:true,maxLines:3),]),)else...[if(st.regs.isEmpty)_txt(c,'尚未加载订阅节点，请点击右上角「+ 订阅」导入配置',cap:true)else Wrap(spacing:6,
+runSpacing:6,children:[for(final r in st.regs)GestureDetector(onTap:()=>unawaited(ntf.selReg(r.code)),child:Container(padding:const EdgeInsets.symmetric(horizontal:10,vertical:7),decoration:_rBox(
+r.code==st.reg?_cP.withValues(alpha:0.15):_subBg(c),11,border:r.code==st.reg?_cP.withValues(alpha:0.6):null,),child:Row(mainAxisSize:MainAxisSize.min,spacing:6,children:[
+Text(r.label,style:AppTextStyle.caption1.of(c,emphasized:true).copyWith(color:r.code==st.reg?_cP:_fg(c))),_txt(c,r.bestMs>0?'${r.bestMs}ms':'${r.nodes.length}',cap:true),]),),),],),Container(
+padding:const EdgeInsets.symmetric(horizontal:11,vertical:8),decoration:_rBox(_subBg(c),12),child:Wrap(alignment:WrapAlignment.spaceBetween,crossAxisAlignment:WrapCrossAlignment.center,spacing:8,runSpacing:6,children:[
+Row(mainAxisSize:MainAxisSize.min,spacing:6,children:[_badge(c,'粘滞IP',_cP),Flexible(child:_txt(c,'$curIp · ${st.ms > 0 ? "${st.ms}ms" : "同段容灾"}',b:true)),]),
+_pBtn(c,'同区 IP (${st.opts.length}) ${st.ipOpen ? "▴" : "▾"}',ntf.togIpP,active:st.ipOpen,activeColor:_cP),]),),if(st.ipOpen)Container(padding:const EdgeInsets.only(top:6),
+child:Column(crossAxisAlignment:CrossAxisAlignment.start,spacing:7,children:[Wrap(spacing:6,runSpacing:6,crossAxisAlignment:WrapCrossAlignment.center,children:[PopupAnchor(targetBuilder:(open)=>_pBtn(c,'容灾阈值 ${st.lim}ms ▾',open),
+popupBuilder:(_)=>PopupMenu(items:[for(final ms in const[600,800,1000,1500])PopupMenuItem(glyph:st.lim==ms?AppGlyphs.check:null,label:'${ms}ms',onPressed:()=>ntf.setLimit(ms)),],),),
+_pBtn(c,st.auto?'✓ 超时同段秒切':'超时秒切已关',()=>ntf.setAuto(!st.auto),active:st.auto,activeColor:_cP),_pBtn(c,st.busy?'测速中...':'测速本区',st.busy?null:()=>unawaited(ntf.probReg())),]),
+_inp(c,_ipCtrl,_ipFocus,'搜索本区 IP / /24网段 / 节点名...',_ipQ,(v)=>setState(()=>_ipQ=v)),ConstrainedBox(constraints:const BoxConstraints(maxHeight:190),child:SingleChildScrollView(child:Column(spacing:5,children:[for(final o in filteredOpts)
+GestureDetector(onTap:()=>unawaited(ntf.pickNode(st.grp,o.node)),child:Container(padding:const EdgeInsets.symmetric(horizontal:10,vertical:7),decoration:_rBox(o.sel?_cP.withValues(alpha:0.16):_subBg(c),10),
+child:Row(children:[Expanded(child:_txt(c,'${o.ip.isNotEmpty ? o.ip : o.node} · ${o.node}',cap:true,b:o.sel)),
+_txt(c,'${o.ms > 0 ? "${o.ms}ms" : (o.ms < 0 ? "超时" : "待测")}${o.sel ? " · 当前" : ""}',cap:true,b:true,col:o.sel?_cP:_mu(c)),]),),),]),),),]),),],]),);}Widget _dSh(BuildContext c,{required String drawerKey,required bool open,
+required String title,required String summary,Widget?trailingAction,required List<Widget>bodyChildren,}){final ntf=ref.read(guardianProvider.notifier);return Container(decoration:_rBox(_cardBg(c),20,border:_fg(c).withValues(alpha:0.07)),
+child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[GestureDetector(behavior:HitTestBehavior.opaque,onTap:()=>ntf.togDrw(drawerKey),child:Padding(padding:const EdgeInsets.symmetric(horizontal:15,vertical:13),
+child:Row(spacing:8,children:[Expanded(child:Wrap(crossAxisAlignment:WrapCrossAlignment.center,spacing:8,runSpacing:3,children:[Text(title,style:AppTextStyle.subheadline.of(c,emphasized:true)),_txt(c,summary,cap:true),]),),
+if(trailingAction!=null)trailingAction,Text(open?'▴':'▾',style:AppTextStyle.subheadline.of(c).copyWith(color:_mu(c))),]),),),if(open)Padding(padding:const EdgeInsets.fromLTRB(15,2,15,15),
+child:Column(crossAxisAlignment:CrossAxisAlignment.start,spacing:8,children:bodyChildren),),]),);}String _vSum(VendorSpec v){if(!v.enabled)return'未启用独立分流（跟随默认兜底）';final parts=<String>[];for(final sl in v.subs.take(3)){
+final shortName=sl.name.split(' ').first;parts.add('$shortName→${FlClashBridge.regLblOf(sl.exit).split(' ').last}');}if(v.hIps.isNotEmpty)parts.add('自愈 ${v.hIps.length} IP');return parts.join(' · ');}
+Widget _vDrw(BuildContext c,GuardianState st,bool isCompact){final ntf=ref.read(guardianProvider.notifier);final enCount=st.vendors.where((v)=>v.enabled).length;final q=_vQ.trim().toLowerCase();final list=q.isEmpty?st.vendors
+:st.vendors.where((v){final hay='${v.name} ${v.procs.join(" ")} ${v.subs.map((s) => "${s.name} ${s.domains.join(" ")}").join(" ")}'.toLowerCase();return hay.contains(q);}).toList();return _dSh(c,drawerKey:'vendors',
+open:st.drawers['vendors']??true,title:'🏢 厂商与 AI 生态分流',summary:'已启用 $enCount/${st.vendors.length} · 点「细分」按子域名分设出口',trailingAction:_pBtn(c,'🔍 筛选 / +自定义',(){if(!(st.drawers['vendors']??true))ntf.togDrw('vendors');setState(()=>_vTl=!_vTl);},
+active:_vTl,),bodyChildren:[if(_vTl)Container(padding:const EdgeInsets.all(10),decoration:_rBox(_subBg(c),12),child:Column(crossAxisAlignment:CrossAxisAlignment.start,spacing:8,children:[
+_inp(c,_vSC,_vSF,'搜索厂商 / 子服务 / 域名 (如 antigravity, claude, codex, grok, youtube)...',_vQ,(v)=>setState(()=>_vQ=v)),Row(spacing:6,children:[Expanded(child:_inp(c,_cDomCtrl,_cDomFocus,'新增自定义域名 (如 linear.app)...',_cDom,(v)=>setState(()=>_cDom=v))),
+_exPill(c,_customExit,_subExitOpts,(code)=>setState(()=>_customExit=code)),_pBtn(c,'+ 加入',_cDom.trim().isEmpty?null:(){final dom=_cDom;_cDomCtrl.clear();setState(()=>_cDom='');unawaited(ntf.addCDom(dom,_customExit));},
+active:_cDom.trim().isNotEmpty,),]),]),),for(final v in list)(){final exp=st.expV.contains(v.id);final brandBox=Container(width:30,height:30,alignment:Alignment.center,decoration:_rBox(Color(v.colVal),9),
+child:Text(v.badge,style:AppTextStyle.caption1.of(c,emphasized:true).copyWith(color:_cWht)),);final titleBlock=Expanded(child:GestureDetector(behavior:HitTestBehavior.opaque,onTap:()=>ntf.togVExp(v.id),
+child:Column(crossAxisAlignment:CrossAxisAlignment.start,spacing:2,children:[Row(spacing:6,children:[Flexible(child:_txt(c,v.name,b:true)),_badge(c,'${v.subs.length} 组子域',_cV),]),_txt(c,_vSum(v),cap:true),]),),);
+final ctrls=Row(mainAxisSize:MainAxisSize.min,spacing:6,children:[_exPill(c,v.defEx,_vendorExitOpts,(code)=>unawaited(ntf.setVEx(v.id,code))),_pBtn(c,'细分 ${exp ? "▴" : "▾"}',()=>ntf.togVExp(v.id),active:exp,activeColor:_cV),
+_sw(v.enabled,_cV,()=>unawaited(ntf.togVEn(v.id))),]);return Opacity(opacity:v.enabled?1.0:0.58,child:Container(padding:const EdgeInsets.symmetric(horizontal:12,vertical:10),
+decoration:_rBox(exp?_subBg(c):_fg(c).withValues(alpha:0.028),14,border:_fg(c).withValues(alpha:exp?0.13:0.06)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,spacing:8,children:[if(isCompact)...[
+Row(spacing:10,children:[brandBox,titleBlock,_sw(v.enabled,_cV,()=>unawaited(ntf.togVEn(v.id)))]),Row(mainAxisAlignment:MainAxisAlignment.end,spacing:6,children:[
+_exPill(c,v.defEx,_vendorExitOpts,(code)=>unawaited(ntf.setVEx(v.id,code))),_pBtn(c,'细分 ${exp ? "▴" : "▾"}',()=>ntf.togVExp(v.id),active:exp,activeColor:_cV),]),]else Row(spacing:10,children:[brandBox,titleBlock,ctrls]),
+if(exp)...[for(final sl in v.subs)Container(padding:const EdgeInsets.symmetric(horizontal:10,vertical:7),decoration:_rBox(_cardBg(c),10),child:Row(spacing:8,children:[Expanded(
+child:Column(crossAxisAlignment:CrossAxisAlignment.start,spacing:2,children:[_txt(c,sl.name,cap:true,b:true),_txt(c,sl.domains.join(', '),cap:true),]),),_exPill(c,sl.exit,_subExitOpts,(code)=>unawaited(ntf.setSEx(v.id,sl.id,code))),]),),
+Wrap(spacing:6,runSpacing:5,crossAxisAlignment:WrapCrossAlignment.center,children:[if(v.procs.isNotEmpty)_badge(c,'① 进程: ${v.procs.join("/")}',_cN),_badge(c,'② 域名 + TLS SNI嗅探',_cN),
+if(v.cidrs.isNotEmpty)_badge(c,'③ ASN: ${v.cidrs.first}',_cN),_badge(c,'④ 阻断补录: ${v.hIps.isEmpty ? "0 IP" : "${v.hIps.length} IP"}',v.hIps.isEmpty?_cN:_cW),
+if(v.hIps.isNotEmpty)_pBtn(c,'清空补录',()=>unawaited(ntf.clrHIps(v.id))),]),],]),),);}(),],);}Widget _aDrw(BuildContext c,GuardianState st,bool isCompact){final ntf=ref.read(guardianProvider.notifier);final q=_appQ.trim().toLowerCase();
+final filtered=st.procs.where((p){if(_appFilter!='all'&&p.rKind!=_appFilter)return false;if(q.isEmpty)return true;return p.name.toLowerCase().contains(q)||p.path.toLowerCase().contains(q)||p.rLbl.toLowerCase().contains(q);}).toList();
+Color badgeCol(String kind)=>kind=='direct'?_cD:(kind=='vendor'?_cV:_cP);return _dSh(c,drawerKey:'apps',open:st.drawers['apps']??true,title:'📱 应用流量与直连放通',
+summary:'${st.procs.length} 个应用 · ${st.wl.length} 个固定直连（含子进程与线程）',trailingAction:_pBtn(c,'+ 添加直连',(){if(!(st.drawers['apps']??true))ntf.togDrw('apps');setState(()=>_addAppOpen=!_addAppOpen);},active:_addAppOpen,
+activeColor:_cD,),bodyChildren:[if(_addAppOpen)Container(padding:const EdgeInsets.all(10),decoration:_rBox(_subBg(c),12),child:Column(crossAxisAlignment:CrossAxisAlignment.start,spacing:8,children:[Row(spacing:6,children:[
+Expanded(child:_inp(c,_wAddCtrl,_wAddFocus,Platform.isAndroid?'输入包名 (如 com.tencent.mm)...':'输入进程名 (WeChat.exe) 或目录 (D:\\Games)...',_wIn,(v)=>setState(()=>_wIn=v),),),_pBtn(c,'加入直连',_wIn.trim().isEmpty?null:(){final v=_wIn;_wAddCtrl.clear();
+setState(()=>_wIn='');unawaited(ntf.addDir(v));},active:_wIn.trim().isNotEmpty,activeColor:_cD,),]),if(!Platform.isAndroid)Wrap(spacing:6,runSpacing:6,children:[for(final(lbl,ex)in GuardianNotifier.presets)_pBtn(c,
+ntf.isDir(ex,'','')?'✓ $lbl':'+ $lbl',()=>unawaited(ntf.togDir(label:lbl,exe:ex)),active:ntf.isDir(ex,'',''),activeColor:_cD,),])else Row(spacing:6,children:[_pBtn(c,_aPk?'收起已装应用 ▴':'勾选本机 App (${st.apps.length}) ▾',(){
+if(st.apps.isEmpty)unawaited(ntf.ldApps());setState(()=>_aPk=!_aPk);},active:_aPk,activeColor:_cD,),_pBtn(c,'刷新列表',()=>unawaited(ntf.ldApps())),]),if(Platform.isAndroid&&_aPk)ConstrainedBox(
+constraints:const BoxConstraints(maxHeight:170),child:SingleChildScrollView(child:Column(spacing:5,children:[for(final a in st.apps.take(80))GestureDetector(onTap:()=>unawaited(ntf.togDir(label:a.label,exe:a.pkg,pkg:a.pkg)),child:Container(
+padding:const EdgeInsets.symmetric(horizontal:10,vertical:6),decoration:_rBox(ntf.isDir(a.pkg,'',a.pkg)?_cD.withValues(alpha:0.15):_cardBg(c),9),child:Row(children:[
+Expanded(child:_txt(c,'${a.label} (${a.pkg})',cap:true,b:true)),_txt(c,ntf.isDir(a.pkg,'',a.pkg)?'✓ 已直连':'设为直连',cap:true,b:true,col:_cD),]),),),]),),),]),),
+Wrap(alignment:WrapAlignment.spaceBetween,crossAxisAlignment:WrapCrossAlignment.center,spacing:8,runSpacing:6,children:[Wrap(spacing:6,runSpacing:6,children:[
+for(final(k,lbl)in const[('all','全部'),('vendor','厂商分流'),('direct','固定直连'),('fallback','跟随兜底')])_pBtn(c,lbl,()=>setState(()=>_appFilter=k),active:_appFilter==k),]),SizedBox(width:isCompact?double.infinity:220,
+child:_inp(c,_aSC,_aSF,'筛选应用或进程...',_appQ,(v)=>setState(()=>_appQ=v)),),]),if(filtered.isEmpty)Padding(padding:const EdgeInsets.symmetric(vertical:14),child:Center(child:_txt(c,'暂无匹配应用，产生流量或添加直连后将自动列出',cap:true)),)else
+for(final p in filtered.take(35))(){final exp=st.expA.contains(p.key);final speedInfo=_txt(c,'↓ ${fmtRate(p.dnR)} · 累计 ${fmtBytes(p.up + p.dn)}',cap:true,b:p.dnR+p.upR>0);final actRow=Row(mainAxisSize:MainAxisSize.min,spacing:8,children:[
+if(p.rawExe.isNotEmpty||p.pkg.isNotEmpty||p.direct)Row(mainAxisSize:MainAxisSize.min,spacing:5,children:[_txt(c,'直连',cap:true),_sw(p.direct,_cD,()=>p.direct&&p.rawExe.isEmpty&&p.pkg.isEmpty&&p.path.isNotEmpty
+?unawaited(ntf.rmDir('dir:${p.path.toLowerCase()}')):unawaited(ntf.togDir(label:p.name,exe:p.rawExe,path:p.path,pkg:p.pkg)),),]),_pBtn(c,'连接 (${p.conns.length}) ${exp ? "▴" : "▾"}',()=>ntf.togAExp(p.key),active:exp),]);return Container(
+padding:const EdgeInsets.symmetric(horizontal:12,vertical:9),decoration:_rBox(p.direct?_cD.withValues(alpha:0.08):_fg(c).withValues(alpha:0.028),14,border:_fg(c).withValues(alpha:0.06)),
+child:Column(crossAxisAlignment:CrossAxisAlignment.start,spacing:6,children:[Row(spacing:8,children:[Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,spacing:2,children:[
+Wrap(spacing:6,runSpacing:4,crossAxisAlignment:WrapCrossAlignment.center,children:[Text(p.name,style:AppTextStyle.subheadline.of(c,emphasized:true)),_badge(c,p.rLbl,badgeCol(p.rKind)),]),
+if(p.path.isNotEmpty||p.rawExe.isNotEmpty||p.pkg.isNotEmpty)_txt(c,p.path.isNotEmpty?p.path:(p.pkg.isNotEmpty?p.pkg:p.rawExe),cap:true),]),),if(!isCompact)...[speedInfo,actRow],]),if(isCompact)
+Row(mainAxisAlignment:MainAxisAlignment.spaceBetween,children:[Flexible(child:speedInfo),actRow]),if(exp)Container(padding:const EdgeInsets.all(8),decoration:_rBox(_subBg(c),10),child:p.conns.isEmpty?_txt(c,'当前无活跃连接套接字',cap:true)
+:Column(spacing:4,children:[for(final cn in p.conns)Row(children:[Expanded(child:_txt(c,'${cn.target} (${cn.net})',cap:true,b:true)),_txt(c,'${cn.dim} → ${cn.chain}',cap:true),]),]),),]),);}(),],);}Widget _lDrw(BuildContext c,GuardianState st){
+final ntf=ref.read(guardianProvider.notifier);final latest=st.logs.firstOrNull;final list=_logCat==null?st.logs:st.logs.where((e)=>e.cat==_logCat).toList();final rulesTxt=FlClashBridge.simpleRules().join('\n');return _dSh(c,drawerKey:'logs',
+open:st.drawers['logs']??false,title:'🛡 容灾与阻断自愈动态',summary:latest!=null?'最近：${latest.title}':'实时守护同段秒切与阻断补录',trailingAction:_badge(c,'${st.logs.length} 条',_cN),bodyChildren:[
+Wrap(alignment:WrapAlignment.spaceBetween,crossAxisAlignment:WrapCrossAlignment.center,spacing:8,runSpacing:6,children:[Wrap(spacing:6,runSpacing:6,children:[_pBtn(c,'全部',()=>setState(()=>_logCat=null),active:_logCat==null),
+for(final ct in LogCat.values)_pBtn(c,ct.label,()=>setState(()=>_logCat=ct),active:_logCat==ct),]),Wrap(spacing:6,runSpacing:6,children:[
+_pBtn(c,st.autoHeal?'✓ 阻断自愈':'阻断自愈已关',()=>ntf.setAutoHeal(!st.autoHeal),active:st.autoHeal,activeColor:_cW),_pBtn(c,_rPv?'收起规则链 ▴':'编译规则链 ▾',()=>setState(()=>_rPv=!_rPv),active:_rPv),
+_pBtn(c,'复制规则',()=>unawaited(Clipboard.setData(ClipboardData(text:rulesTxt)))),_pBtn(c,'清空',ntf.clrLog),]),]),if(_rPv)Container(width:double.infinity,constraints:const BoxConstraints(maxHeight:180),padding:const EdgeInsets.all(10),
+decoration:_rBox(const Color(0xFF0F172A),12),child:SingleChildScrollView(child:Text(rulesTxt,style:AppTextStyle.caption1.of(c).copyWith(color:const Color(0xFFE2E8F0))),),),ConstrainedBox(constraints:const BoxConstraints(maxHeight:240),
+child:list.isEmpty?Padding(padding:const EdgeInsets.all(12),child:Center(child:_txt(c,'暂无记录',cap:true))):SingleChildScrollView(child:Column(spacing:5,children:[for(final e in list.take(40))Container(width:double.infinity,
+padding:const EdgeInsets.symmetric(horizontal:10,vertical:7),decoration:_rBox(e.hot?_cP.withValues(alpha:0.10):_subBg(c),10),child:Column(crossAxisAlignment:CrossAxisAlignment.start,spacing:2,children:[
+_txt(c,'[${fmtTime(e.time)}][${e.cat.label}] ${e.title}',cap:true,b:true),if(e.detail.isNotEmpty)_txt(c,e.detail,cap:true,maxLines:2),]),),]),),),],);}Widget _mBar(BuildContext c,GuardianState st,bool run){
+final enCnt=st.vendors.where((v)=>v.enabled).length;final routeSummary=st.fbDir?'🛡 兜底直连 · 仅代理 $enCnt 大厂商':'${st.regLbl}粘滞 · $enCnt 大厂商分流';return Container(padding:const EdgeInsets.symmetric(horizontal:14,vertical:9),
+decoration:_rBox(_cardBg(c),0,border:_fg(c).withValues(alpha:0.10)),child:Row(spacing:10,children:[Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,spacing:2,children:[_txt(c,routeSummary,b:true),
+_txt(c,run?'↓ ${fmtRate(st.dnR)} · ${st.ms > 0 ? "${st.ms}ms" : "守护中"}':'内核未启动',cap:true),]),),FilledButton(onPressed:_busy?null:()=>_toggleRun(run),child:Text(_busy?'切换中...':(run?'● 运行中 ${fmtDur(st.runSec)}':'▶ 开启接管')),),]),);}@override
+Widget build(BuildContext context){final cs=context.colorScheme;final st=ref.watch(guardianProvider);final ntf=ref.read(guardianProvider.notifier);final run=FlClashBridge.watchRunning(ref);final profs=FlClashBridge.watchProfiles(ref);
+return Surface(color:SurfaceLevel.page.colorOf(cs),child:SafeArea(child:LayoutBuilder(builder:(ctx,box){final isDesktop=box.maxWidth>=820;final isCompact=box.maxWidth<560;final cockpit=isDesktop?Row(crossAxisAlignment:CrossAxisAlignment.start,
+spacing:12,children:[Expanded(flex:11,child:_tCard(ctx,st,run)),Expanded(flex:10,child:_fCard(ctx,st,isCompact)),],):Column(spacing:12,children:[_tCard(ctx,st,run),_fCard(ctx,st,isCompact),],);final quietFooter=Padding(
+padding:const EdgeInsets.symmetric(horizontal:4,vertical:2),child:Wrap(alignment:WrapAlignment.spaceBetween,crossAxisAlignment:WrapCrossAlignment.center,spacing:8,runSpacing:6,children:[_txt(ctx,'抽屉展开/收起及子域名细分状态已自动静默记忆',cap:true),
+Wrap(spacing:6,children:[_pBtn(ctx,'全部展开',()=>ntf.setAllDrw(true)),_pBtn(ctx,'仅看座舱',()=>ntf.setAllDrw(false)),_pBtn(ctx,'恢复默认布局',()=>unawaited(ntf.rstLay())),]),],),);return Column(children:[_hdr(ctx,st,run,isDesktop,profs),Expanded(child:Align(
+alignment:Alignment.topCenter,child:ConstrainedBox(constraints:const BoxConstraints(maxWidth:1060),child:SingleChildScrollView(padding:EdgeInsets.fromLTRB(isDesktop?18:12,8,isDesktop?18:12,18),child:Column(
+crossAxisAlignment:CrossAxisAlignment.stretch,spacing:12,children:[cockpit,_vDrw(ctx,st,isCompact),_aDrw(ctx,st,isCompact),_lDrw(ctx,st),quietFooter,],),),),),),if(!isDesktop)_mBar(ctx,st,run),]);}),),);}}
