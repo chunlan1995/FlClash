@@ -3,12 +3,23 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 MOD = pathlib.Path(__file__).resolve().parent
 run_tags = lambda cmd: subprocess.run(cmd, text=True, capture_output=True, timeout=15).stdout.splitlines()
 if '--calc-version' in sys.argv: tags = [ln.split('refs/tags/')[-1].strip() for c in (['git', 'ls-remote', '--tags', 'origin'], ['git', 'tag', '-l']) for ln in run_tags(c) if ln.strip()]; vals = [93] + [int(m[1]) * 100 + int(m[2]) * 10 + int(m[3]) for tg in tags if (m := re.match(r'^v(\d+)\.(\d)\.(\d)$', tg)) and int(m[1]) * 100 + int(m[2]) * 10 + int(m[3]) >= 94]; n = max(vals) + 1; v = f'{n // 100}.{(n // 10) % 10}.{n % 10}'; c = 2030000000 + n * 100 + (int(os.environ.get('GITHUB_RUN_NUMBER', '1')) % 100); open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8').write(f'ver={v}\ncode={c}\n'); print(f'Next version: v{v} (+{c})'); sys.exit(0)
-ver = os.environ.get('APP_VER', '0.9.9').strip() or '0.9.9'
-code = os.environ.get('APP_CODE', '2030009901').strip() or '2030009901'
+ver = os.environ.get('APP_VER', '1.0.0').strip() or '1.0.0'
+code = os.environ.get('APP_CODE', '2030010001').strip() or '2030010001'
 ps = ROOT / 'pubspec.yaml'
 pt, np = re.subn(r'^version:\s*\S+', f'version: {ver}+{code}', ps.read_text(encoding='utf-8'), count=1, flags=re.MULTILINE)
 assert np == 1
 ps.write_text(pt, encoding='utf-8')
+sub_if = lambda p, a, b: p.write_text(p.read_text(encoding='utf-8').replace(a, b), encoding='utf-8') if p.exists() else None
+sub_if(ROOT / 'distribute_options.yaml', "app_name: 'FlClash'", "app_name: 'BlueClash'")
+[(sub_if(sx, '>FlClash Service<', '>BlueClash Service<'), sub_if(sx, '>FlClash<', '>BlueClash<')) for sx in ROOT.glob('android/**/strings.xml')]
+sub_if(ROOT / 'windows/packaging/exe/make_config.yaml', 'app_name: FlClash', 'app_name: BlueClash')
+sub_if(ROOT / 'windows/packaging/exe/make_config.yaml', 'display_name: FlClash', 'display_name: BlueClash')
+sub_if(ROOT / 'windows/runner/main.cpp', 'L"FlClash"', 'L"BlueClash"')
+sub_if(ROOT / 'windows/runner/Runner.rc', '"FileDescription", "FlClash"', '"FileDescription", "BlueClash"')
+sub_if(ROOT / 'windows/runner/Runner.rc', '"ProductName", "clash"', '"ProductName", "BlueClash"')
+sub_if(ROOT / 'lib/application.dart', 'title: appName,', "title: 'BlueClash',")
+sub_if(ROOT / 'lib/common/tray.dart', 'safeModeAppTitle(appName)', "safeModeAppTitle('BlueClash')")
+sub_if(ROOT / 'lib/common/tray.dart', ': appName,', ": 'BlueClash',")
 od = ROOT / 'lib/custom'
 od.mkdir(parents=True, exist_ok=True)
 (od / 'flclash_bridge.dart').write_text((MOD / 'flclash_bridge.dart').read_text(encoding='utf-8').replace('__APP_VER__', ver), encoding='utf-8')
@@ -48,4 +59,4 @@ jks = ad / 'app/keystore.jks'
 td = pathlib.Path(tempfile.mkdtemp()) if (ad.exists() and shutil.which('openssl')) else None
 t1, t2 = 'RSA ' + 'PRIVATE ' + 'KEY', 'CERTI' + 'FICATE'
 if td: jks.parent.mkdir(parents=True, exist_ok=True); (td / 'k.p').write_bytes(f'-----BEGIN {t1}-----\n'.encode() + base64.encodebytes(kd) + f'-----END {t1}-----\n'.encode()); (td / 'c.p').write_bytes(f'-----BEGIN {t2}-----\n'.encode() + base64.encodebytes(cd) + f'-----END {t2}-----\n'.encode()); subprocess.run(['openssl', 'pkcs12', '-export', '-in', str(td / 'c.p'), '-inkey', str(td / 'k.p'), '-name', 'flclash', '-out', str(jks), '-passout', 'env:KPW'], env=dict(os.environ, KPW='flclash123'), check=True); shutil.rmtree(td, ignore_errors=True); lp = ad / 'local.properties'; ex = lp.read_text(encoding='utf-8') if lp.exists() else ''; k1, k2 = 'store' + 'Pass' + 'word', 'key' + 'Pass' + 'word'; kp = [l for l in ex.splitlines() if not l.strip().startswith(('keyAlias=', k1 + '=', k2 + '='))] + ['keyAlias=flclash', f'{k1}=flclash123', f'{k2}=flclash123']; lp.write_text('\n'.join(kp) + '\n', encoding='utf-8')
-print(f'Wired FlClash v{ver}+{code} OK')
+print(f'Wired BlueClash v{ver}+{code} OK')
