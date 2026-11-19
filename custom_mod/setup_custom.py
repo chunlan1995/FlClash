@@ -3,8 +3,8 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 MOD = pathlib.Path(__file__).resolve().parent
 run_tags = lambda cmd: subprocess.run(cmd, text=True, capture_output=True, timeout=15).stdout.splitlines()
 if '--calc-version' in sys.argv: tags = [ln.split('refs/tags/')[-1].strip() for c in (['git', 'ls-remote', '--tags', 'origin'], ['git', 'tag', '-l']) for ln in run_tags(c) if ln.strip()]; vals = [93] + [int(m[1]) * 100 + int(m[2]) * 10 + int(m[3]) for tg in tags if (m := re.match(r'^v(\d+)\.(\d)\.(\d)$', tg)) and int(m[1]) * 100 + int(m[2]) * 10 + int(m[3]) >= 94]; n = max(vals) + 1; v = f'{n // 100}.{(n // 10) % 10}.{n % 10}'; c = 2030000000 + n * 100 + (int(os.environ.get('GITHUB_RUN_NUMBER', '1')) % 100); open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8').write(f'ver={v}\ncode={c}\n'); print(f'Next version: v{v} (+{c})'); sys.exit(0)
-ver = os.environ.get('APP_VER', '1.0.0').strip() or '1.0.0'
-code = os.environ.get('APP_CODE', '2030010001').strip() or '2030010001'
+ver = os.environ.get('APP_VER', '1.0.1').strip() or '1.0.1'
+code = os.environ.get('APP_CODE', '2030010101').strip() or '2030010101'
 ps = ROOT / 'pubspec.yaml'
 pt, np = re.subn(r'^version:\s*\S+', f'version: {ver}+{code}', ps.read_text(encoding='utf-8'), count=1, flags=re.MULTILINE)
 assert np == 1
