@@ -1,10 +1,10 @@
-import base64, hashlib, os, pathlib, random, re, shutil, subprocess, sys, tempfile
+import base64, hashlib, os, pathlib, plistlib, random, re, shutil, subprocess, sys, tempfile
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 MOD = pathlib.Path(__file__).resolve().parent
 run_tags = lambda cmd: subprocess.run(cmd, text=True, capture_output=True, timeout=15).stdout.splitlines()
 if '--calc-version' in sys.argv: tags = [ln.split('refs/tags/')[-1].strip() for c in (['git', 'ls-remote', '--tags', 'origin'], ['git', 'tag', '-l']) for ln in run_tags(c) if ln.strip()]; vals = [93] + [int(m[1]) * 100 + int(m[2]) * 10 + int(m[3]) for tg in tags if (m := re.match(r'^v(\d+)\.(\d)\.(\d)$', tg)) and int(m[1]) * 100 + int(m[2]) * 10 + int(m[3]) >= 94]; n = max(vals) + 1; v = f'{n // 100}.{(n // 10) % 10}.{n % 10}'; c = 2030000000 + n * 100 + (int(os.environ.get('GITHUB_RUN_NUMBER', '1')) % 100); open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8').write(f'ver={v}\ncode={c}\n'); print(f'Next version: v{v} (+{c})'); sys.exit(0)
-ver = os.environ.get('APP_VER', '1.0.1').strip() or '1.0.1'
-code = os.environ.get('APP_CODE', '2030010101').strip() or '2030010101'
+ver = os.environ.get('APP_VER', '1.0.2').strip() or '1.0.2'
+code = os.environ.get('APP_CODE', '2030010201').strip() or '2030010201'
 ps = ROOT / 'pubspec.yaml'
 pt, np = re.subn(r'^version:\s*\S+', f'version: {ver}+{code}', ps.read_text(encoding='utf-8'), count=1, flags=re.MULTILINE)
 assert np == 1
@@ -17,14 +17,19 @@ sub_if(ROOT / 'windows/packaging/exe/make_config.yaml', 'display_name: FlClash',
 sub_if(ROOT / 'windows/runner/main.cpp', 'L"FlClash"', 'L"BlueClash"')
 sub_if(ROOT / 'windows/runner/Runner.rc', '"FileDescription", "FlClash"', '"FileDescription", "BlueClash"')
 sub_if(ROOT / 'windows/runner/Runner.rc', '"ProductName", "clash"', '"ProductName", "BlueClash"')
+mp = ROOT / 'macos/Runner/Info.plist'
+if mp.exists(): md = plistlib.loads(mp.read_bytes()); md['CFBundleName'] = 'BlueClash'; md['CFBundleDisplayName'] = 'BlueClash'; mp.write_bytes(plistlib.dumps(md, fmt=plistlib.FMT_XML, sort_keys=False))
+mdmg = ROOT / 'macos/packaging/dmg/make_config.yaml'
+if mdmg.exists(): mdmg.write_text(re.sub(r'(?m)^(title:\s*)([\x27"]?)FlClash\2\s*$', r'\1\2BlueClash\2', mdmg.read_text(encoding='utf-8')), encoding='utf-8')
 sub_if(ROOT / 'lib/application.dart', 'title: appName,', "title: 'BlueClash',")
 sub_if(ROOT / 'lib/common/tray.dart', 'safeModeAppTitle(appName)', "safeModeAppTitle('BlueClash')")
 sub_if(ROOT / 'lib/common/tray.dart', ': appName,', ": 'BlueClash',")
 od = ROOT / 'lib/custom'
 od.mkdir(parents=True, exist_ok=True)
-(od / 'flclash_bridge.dart').write_text((MOD / 'flclash_bridge.dart').read_text(encoding='utf-8').replace('__APP_VER__', ver), encoding='utf-8')
-shutil.copyfile(MOD / 'smart_guardian.dart', od / 'smart_guardian.dart')
-shutil.copyfile(MOD / 'simple_workbench.dart', od / 'simple_workbench.dart')
+fb = (MOD / 'flclash_bridge.dart').read_text(encoding='utf-8').replace('__APP_VER__', ver)
+for a, b in [('launchd|systemd)(\\.(exe|app|bin))?$', 'launchd|systemd|finder|dock|loginwindow|windowserver|spotlight|systemuiserver|usereventagent)(\\.(exe|app|bin))?$'), ('static String safeDir(String pp) {', "static String safeDir(String pp) {final rawT = pp.trim();if (rawT.startsWith('/')) {final mApp = RegExp(r'^(/[^,]+?\\.app)(?:/|$)', caseSensitive: false).firstMatch(rawT);if (mApp != null) {final bDir = mApp.group(1)!;return isStandardDesktopBrowserInstall('', '$bDir/Contents/MacOS/x') ? '' : bDir;}final pLow = rawT.toLowerCase();if (RegExp(r'^/(applications|usr|bin|sbin|opt|system|library)(/|$)').hasMatch(pLow) || RegExp(r'^/(users|home)/[^/]+(/(applications|desktop|downloads|library|\\.local|\\.local/bin))?/?$').hasMatch(pLow)) return '';}"), ("r'.*[/\\\\]microsoft[/\\\\]edge[/\\\\]application[/\\\\].*'", "r'.*[/\\\\]microsoft[/\\\\]edge[/\\\\]application[/\\\\].*', r'.*[/\\\\]microsoft edge\\.app[/\\\\].*'"), ("r'.*[/\\\\]google[/\\\\]chrome (beta|dev|sxs)[/\\\\]application[/\\\\].*'", "r'.*[/\\\\]google[/\\\\]chrome (beta|dev|sxs)[/\\\\]application[/\\\\].*', r'.*[/\\\\](microsoft edge|google chrome) (beta|dev|canary)\\.app[/\\\\].*'"), ("r'.*[/\\\\]google[/\\\\]chrome[/\\\\]application[/\\\\].*'", "r'.*[/\\\\]google[/\\\\]chrome[/\\\\]application[/\\\\].*', r'.*[/\\\\]google chrome\\.app[/\\\\].*'"), ("r'.*[/\\\\]bravesoftware[/\\\\]brave-browser[/\\\\]application[/\\\\].*'", "r'.*[/\\\\]bravesoftware[/\\\\]brave-browser[/\\\\]application[/\\\\].*', r'.*[/\\\\]brave browser\\.app[/\\\\].*'"), ("r'.*[/\\\\](mozilla firefox|zen browser|waterfox|librewolf|floorp)[/\\\\].*'", "r'.*[/\\\\](mozilla firefox|zen browser|waterfox|librewolf|floorp)[/\\\\].*', r'.*[/\\\\](firefox|zen browser|zen|waterfox|librewolf|floorp)\\.app[/\\\\].*'"), ("r'.*[/\\\\]packages[/\\\\]thebrowsercompany\\.arc.*'", "r'.*[/\\\\]packages[/\\\\]thebrowsercompany\\.arc.*', r'.*[/\\\\](arc|vivaldi|opera|opera gx)\\.app[/\\\\].*'")]: assert fb.count(a) == 1, a; fb = fb.replace(a, b, 1)
+(od / 'flclash_bridge.dart').write_text(fb, encoding='utf-8')
+[shutil.copyfile(f, od / f.name) for f in sorted(MOD.glob('*.dart')) if f.name != 'flclash_bridge.dart']
 ia = ROOT / 'lib/providers/action.dart'
 it = ia.read_text(encoding='utf-8')
 if 'flclash_bridge.dart' not in it: it, ni = re.subn(r'^(\s*import\s+)', "import 'package:fl_clash/custom/flclash_bridge.dart';\n\\1", it, count=1, flags=re.MULTILINE); assert ni == 1; ia.write_text(it, encoding='utf-8')
