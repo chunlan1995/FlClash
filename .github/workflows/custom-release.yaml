@@ -1,55 +1,148 @@
-name: BlueClash Release (Windows EXE & Android APK)
+name: BlueClash Release (Android, Windows & macOS)
+
 on:
   workflow_dispatch:
-  push: {branches: [main], paths: ['custom_mod/**', '.github/workflows/custom-release.yaml']}
-permissions: {contents: write}
-concurrency: {group: 'custom-release-${{ github.ref }}', cancel-in-progress: true}
-env: {FLUTTER_VERSION: '3.47.6', GO_VERSION: '1.27.1', NDK_VERSION: r28c}
+  push:
+    branches: [main]
+    paths:
+      - 'custom_mod/**'
+      - '.github/workflows/custom-release.yaml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: 'custom-release-${{ github.ref }}'
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: '3.47.6'
+  GO_VERSION: '1.27.1'
+  NDK_VERSION: r28c
+
 jobs:
   version:
     name: Next +0.0.1 Version
     runs-on: ubuntu-latest
-    outputs: {ver: '${{ steps.v.outputs.ver }}', code: '${{ steps.v.outputs.code }}'}
+    outputs:
+      ver: '${{ steps.v.outputs.ver }}'
+      code: '${{ steps.v.outputs.code }}'
     steps:
-      - {uses: actions/checkout@v4, with: {fetch-depth: 0}}
-      - {id: v, run: python3 custom_mod/setup_custom.py --calc-version}
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: v
+        run: python3 custom_mod/setup_custom.py --calc-version
+
   build:
-    name: Build ${{ matrix.platform }}
+    name: Build ${{ matrix.platform }} (${{ matrix.arch }})
     needs: [version]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 60
+    timeout-minutes: 75
     strategy:
       fail-fast: false
-      matrix: {include: [{platform: android, os: ubuntu-latest, arch: arm64}, {platform: windows, os: Windows-2022, arch: amd64}]}
+      matrix:
+        include:
+          - platform: android
+            os: ubuntu-latest
+            arch: arm64
+          - platform: windows
+            os: Windows-2022
+            arch: amd64
+          - platform: macos
+            os: macos-latest
+            arch: arm64
+          - platform: macos
+            os: macos-15-intel
+            arch: amd64
     steps:
-      - {uses: actions/checkout@v4, with: {submodules: recursive}}
-      - {uses: actions/setup-go@v5, with: {go-version: '${{ env.GO_VERSION }}', cache: true, cache-dependency-path: core/go.sum}}
-      - {if: "matrix.platform == 'android'", uses: actions/setup-java@v4, with: {distribution: temurin, java-version: '17'}}
-      - {if: "matrix.platform == 'android'", uses: gradle/actions/setup-gradle@v6}
-      - {if: "matrix.platform == 'android'", id: build-ndk, uses: nttld/setup-ndk@v1, with: {ndk-version: '${{ env.NDK_VERSION }}', add-to-path: true, link-to-sdk: true}}
-      - {if: "matrix.platform == 'windows'", run: git config --global core.longpaths true}
-      - {uses: subosito/flutter-action@v2, with: {channel: stable, flutter-version: '${{ env.FLUTTER_VERSION }}', cache: true}}
-      - {run: flutter pub get}
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '${{ env.GO_VERSION }}'
+          cache: true
+          cache-dependency-path: core/go.sum
+      - if: "matrix.platform == 'android'"
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - if: "matrix.platform == 'android'"
+        uses: gradle/actions/setup-gradle@v6
+      - if: "matrix.platform == 'android'"
+        id: build-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: '${{ env.NDK_VERSION }}'
+          add-to-path: true
+          link-to-sdk: true
+      - if: "matrix.platform == 'windows'"
+        run: git config --global core.longpaths true
+      - if: "matrix.platform == 'macos'"
+        name: Setup Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.3.app || sudo xcode-select -s /Applications/Xcode_26.2.app || true
+          xcodebuild -version
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '${{ env.FLUTTER_VERSION }}'
+          cache: true
+      - run: flutter pub get
       - name: Fetch CA
         shell: bash
-        run: b=core/Clash.Meta/component/ca/ca-certificates.crt && mkdir -p "$(dirname "$b")" && u="ht""tps://curl.se/ca/cacert-2026-09-25.pem" && curl -fsSL --retry 3 -o "$b" "$u" && echo "a41b5d356aea97a529fe27e0f7316d2f9d946d75927476cf9cf1b90637d00505  $b" | sha256sum -c -
+        run: |
+          b=core/Clash.Meta/component/ca/ca-certificates.crt
+          mkdir -p "$(dirname "$b")"
+          u="ht""tps://curl.se/ca/cacert-2026-09-25.pem"
+          curl -fsSL --retry 3 -o "$b" "$u"
+          (echo "a41b5d356aea97a529fe27e0f7316d2f9d946d75927476cf9cf1b90637d00505  $b" | sha256sum -c -) || (echo "a41b5d356aea97a529fe27e0f7316d2f9d946d75927476cf9cf1b90637d00505  $b" | shasum -a 256 -c -)
       - name: Apply Customizations
         shell: bash
-        env: {APP_VER: '${{ needs.version.outputs.ver }}', APP_CODE: '${{ needs.version.outputs.code }}'}
+        env:
+          APP_VER: '${{ needs.version.outputs.ver }}'
+          APP_CODE: '${{ needs.version.outputs.code }}'
         run: (python3 custom_mod/setup_custom.py || python custom_mod/setup_custom.py) && dart format lib/custom lib/pages/home.dart lib/providers/action.dart lib/providers/actions/setup.dart lib/application.dart lib/common/tray.dart && flutter analyze --no-fatal-infos --no-fatal-warnings lib/custom lib/pages/home.dart lib/providers/action.dart
-      - {if: "matrix.platform == 'android'", name: Build Android APK, env: {ANDROID_NDK_HOME: '${{ steps.build-ndk.outputs.ndk-path }}'}, run: dart setup.dart android --arch arm64 --env stable -v}
-      - {if: "matrix.platform == 'windows'", name: Build Windows EXE, run: dart setup.dart windows --env stable -v}
-      - {uses: actions/upload-artifact@v4, with: {name: 'custom-${{ matrix.platform }}-${{ matrix.arch }}', path: ./dist, overwrite: true}}
+      - if: "matrix.platform == 'macos' && matrix.arch == 'amd64'"
+        name: Disable Impeller on Intel macOS
+        run: plutil -replace FLTEnableImpeller -bool NO macos/Runner/Info.plist
+      - if: "matrix.platform == 'macos'"
+        name: Verify macOS Info.plist
+        run: plutil -lint macos/Runner/Info.plist
+      - if: "matrix.platform == 'android'"
+        name: Build Android APK
+        env:
+          ANDROID_NDK_HOME: '${{ steps.build-ndk.outputs.ndk-path }}'
+        run: dart setup.dart android --arch arm64 --env stable -v
+      - if: "matrix.platform == 'windows'"
+        name: Build Windows EXE
+        run: dart setup.dart windows --env stable -v
+      - if: "matrix.platform == 'macos'"
+        name: Build macOS DMG
+        run: dart setup.dart macos --env stable -v
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 'custom-${{ matrix.platform }}-${{ matrix.arch }}'
+          path: ./dist
+          overwrite: true
+
   release:
-    name: Publish Release (.exe & .apk)
+    name: Publish Release (Android, Windows & macOS)
     needs: [version, build]
     runs-on: ubuntu-latest
     steps:
-      - {uses: actions/download-artifact@v4, with: {path: ./dist, pattern: 'custom-*', merge-multiple: true}}
-      - {name: SHA256SUMS, run: cd ./dist && sha256sum ./* > SHA256SUMS.txt && ls -lh}
+      - uses: actions/download-artifact@v4
+        with:
+          path: ./dist
+          pattern: 'custom-*'
+          merge-multiple: true
+      - name: SHA256SUMS
+        run: cd ./dist && sha256sum ./* > SHA256SUMS.txt && ls -lh
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ needs.version.outputs.ver }}
           name: BlueClash v${{ needs.version.outputs.ver }}
-          body: "BlueClash v${{ needs.version.outputs.ver }}：品牌升级为 BlueClash（保留原固定签名与 AppId 支持直接覆盖升级） · 厂商客户端全进程整包统一代理 · 应用与进程精简为「被代理 / 兜底」两分类，支持点击兜底漏网之鱼一键投送至对应代理配置并持久化记录"
+          body: "BlueClash v${{ needs.version.outputs.ver }}（Android · Windows · macOS 三平台正式版）：新增桌面端主进程多线程与动态伴生进程树引擎（自动追踪 Harness / IDE 拉起的子进程并持久化至伴生白名单，后续按拉起关系动态查漏补缺） · 支持专享浏览器特定环境锁区代理 · 保留原固定签名、AppId 与 Bundle ID 支持三端直接覆盖升级"
           files: ./dist/*
