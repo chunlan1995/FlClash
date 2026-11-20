@@ -144,5 +144,5 @@ jobs:
         with:
           tag_name: v${{ needs.version.outputs.ver }}
           name: BlueClash v${{ needs.version.outputs.ver }}
-          body: "BlueClash v${{ needs.version.outputs.ver }}（Android · Windows · macOS 三平台正式版）：换装全新「布鲁岛」通透白帆海岛三端应用图标 · 全项目 FlClash 字符串彻底统一为 BlueClash（含通知栏、菜单栏、TUN 网卡与多语言文案） · 移除显式完整原版按钮并隐藏至左上角 BlueClash 图标连续点击 5 次触发 · 支持自定义分类高低优先级双国家容灾与高优优先回切"
+          body: "BlueClash v${{ needs.version.outputs.ver }}（Android · Windows · macOS 三平台正式版）：重构配置驱动的全球国家/地区动态识别与下拉选择引擎（自动分析当前 YAML 配置、Provider 与实时节点池，支持马来西亚 MY、菲律宾 PH 等全球 50+ 国家关键词及全部 249 国 Unicode 国旗 Emoji 自动解码，全界面所有国家下拉菜单按当前配置实时生成并展示节点数与延迟） · 保留天蓝布鲁岛白帆图标、自定义分类高低优国家故障回切、5 连击图标隐藏旧版入口及三端直接覆盖升级兼容"
           files: ./dist/*
