@@ -144,5 +144,5 @@ jobs:
         with:
           tag_name: v${{ needs.version.outputs.ver }}
           name: BlueClash v${{ needs.version.outputs.ver }}
-          body: "BlueClash v${{ needs.version.outputs.ver }}（Android · Windows · macOS 三平台正式版）：新增自定义分类（支持单独添加软件、兜底一键投送、伴生子进程继承与持久化记录） · 自定义分类支持高/低优先级双国家容灾（高优全 IP 失效自动切至低优，每次切换优先检查高优并自动回切） · 原版模式切换按钮统一移至右上角顶栏不遮挡 · 保留原固定签名、AppId 与 Bundle ID 支持三端直接覆盖升级"
+          body: "BlueClash v${{ needs.version.outputs.ver }}（Android · Windows · macOS 三平台正式版）：换装全新「布鲁岛」通透白帆海岛三端应用图标 · 全项目 FlClash 字符串彻底统一为 BlueClash（含通知栏、菜单栏、TUN 网卡与多语言文案） · 移除显式完整原版按钮并隐藏至左上角 BlueClash 图标连续点击 5 次触发 · 支持自定义分类高低优先级双国家容灾与高优优先回切"
           files: ./dist/*
