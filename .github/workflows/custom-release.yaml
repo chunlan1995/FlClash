@@ -144,5 +144,5 @@ jobs:
         with:
           tag_name: v${{ needs.version.outputs.ver }}
           name: BlueClash v${{ needs.version.outputs.ver }}
-          body: "BlueClash v${{ needs.version.outputs.ver }}（Android · Windows · macOS 三平台正式版）：重构配置驱动的全球国家/地区动态识别与下拉选择引擎（自动分析当前 YAML 配置、Provider 与实时节点池，支持马来西亚 MY、菲律宾 PH 等全球 50+ 国家关键词及全部 249 国 Unicode 国旗 Emoji 自动解码，全界面所有国家下拉菜单按当前配置实时生成并展示节点数与延迟） · 保留天蓝布鲁岛白帆图标、自定义分类高低优国家故障回切、5 连击图标隐藏旧版入口及三端直接覆盖升级兼容"
+          body: "BlueClash v${{ needs.version.outputs.ver }}（Android · Windows · macOS 三平台正式版）：升级为「IP 归属国优先 + 名称末端兜底」四层国家分类引擎（优先读取真实隧道落地 IP 与本地 GEOIP.metadb / Country.mmdb / GEOIP.dat + 批量在线 GeoIP 识别服务器 IP 归属国，完全不依赖节点名字即可精准识别菲律宾 PH、马来西亚 MY 等全球节点；仅当国内中转入口 CN 或泛播 CDN 且未探测出口时才回退名称末端落地词识别，并修复香港->菲律宾等中转命名截胡、多行 YAML 与 Provider 全量合并） · 保留天蓝布鲁岛图标、自定义分类高低优国家故障回切、5 连击图标隐藏旧版入口及三端覆盖升级兼容"
           files: ./dist/*
