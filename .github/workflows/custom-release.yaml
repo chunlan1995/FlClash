@@ -50,7 +50,7 @@ jobs:
             os: Windows-2022
             arch: amd64
           - platform: macos
-            os: macos-latest
+            os: macos-15
             arch: arm64
           - platform: macos
             os: macos-15-intel
