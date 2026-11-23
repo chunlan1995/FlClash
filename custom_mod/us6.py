@@ -1,4 +1,4 @@
-import base64, io, json, struct, zlib # end
+import base64, io, json, os, struct, zlib # end
 import icon_pack, us1, us2, us3, us4, us5 # end
 def _rs(s, a, b, v): # end
     i = s .index(a) # end
@@ -72,6 +72,14 @@ def _apply_icons_and_ver(od, psw, pswc, d2): # end
     swc2 = pswc .read_text('utf-8') # end
     if 'summaryGrid' in swc2: # end
         pswc .write_text(_rs(_rs(_rs(swc2, 'Widget _buildOverviewPage(', 'Widget _statusCard(', d2['ov']), 'Widget _subItemCard(', 'Widget _buildSubEditModal(', d2['sc']), 'Widget _fallbackAndWhoamiCard(', 'Widget _buildCountryPage(', d2['fw']), 'utf-8') # end
+    if os .environ .get('BC_MACOS_ARM') == 'arm64': # end
+        pcb = root / d2['p_cb']; pxc = root / d2['p_xc']; psd = root / d2['p_sd'] # end
+        if pcb .exists(): # end
+            pcb .write_text(pcb .read_text('utf-8') .replace(d2['cb_old'], d2['cb_new']), 'utf-8') # end
+        if pxc .exists() and 'ONLY_ACTIVE_ARCH = NO' not in pxc .read_text('utf-8'): # end
+            pxc .write_text(pxc .read_text('utf-8') + d2['xc_app'], 'utf-8') # end
+        if psd .exists(): # end
+            psd .write_text(psd .read_text('utf-8') .replace(d2['sd_old'], d2['sd_new']), 'utf-8') # end
 def apply_v118(od): # end
     raw = us1 .P1 + us2 .P2 .replace('4l/9a1Dw1o', '4l/8a1Dw1o') + us3 .P3 + us4 .P4 .replace('TtNtNtNSkno', 'TtNtNSkno') + us5 .P5 # end
     d = json .loads(zlib .decompress(base64 .b64decode(raw)) .decode('utf-8')) # end
@@ -107,20 +115,20 @@ def apply_v118(od): # end
         swc = _rs(swc, 'Widget _buildOverviewPage(', 'Widget _fallbackAndWhoamiCard(', d['swc_subs']) # end
         pswc .write_text(swc, 'utf-8') # end
     p6 = ( # end
-'eNrtXHuT21SW/yqih43tXcWW5EfbTrt72+k0m1onMOmQLJukXLIk26rIkkqS+7Ghq7IsJOGZsMAwQG' # end
-'qAYWaHYZbA7DIzEMhQNR8F4k7nr9mPsL9zryQ/Ync6cWcJtSFV7aurc8/rnvM75153c27GWZ0pCzMn' # end
-'Tb1lBEK90TUt/clVw1s1jbWn1JaRrNLMQccOjPVA0MQnuqqnm6q9EqiBIfiBWDP9YG6l2zhmau3Dgd' # end
-'GZ9zDAsy82HMcSvK7NB/6G/9Q6HwZd+8lw1vSXDP9s4Lipc03TVvHOcY85a5V4fgFPSc1zfH9x3fQX' # end
-'LbNldww7KNc1dUX0XVUz7VZZVkStDTU9wy7PcVPmTx1ad1VbN/Rk0zLWy7LMScp1H5p3/YMwI6mJMI' # end
-'A05MoxvVIpcWSlFK1sqpbVULWzi7Z+su2oHTNmgkVnxFT5oGN1O3ZyR7XuKl/cSQ6JOeAZQdezhVDa' # end
-'GOccvGNKSPsBlmntnX1mNpN1T3ODE6afYoOqatuGB9nRrqZEvkNMkc0ZUZhprg0G0Hjd7xJE0ebbQb' # end
-'PiGU0h7RmqnmyFVE95zqqpG56Qtp3AbJqGlzrA6RElpmdoQcWHgc0GHg6EenQc3TiuNpIrgQdjBath' # end
-'hVFoWOIJx9QPhmoKjn1cdVOV+XjP+V4/YfjwsbFkBGDveMmG0VZXTccr19tPuiJbVGY/w9gg21STXO' # end
-'Wquk7+1RwbWh2CNodt3wh87MBGp2NAHy2J/ApMTbXKxXQ+Jarxvg1sl4afhifqhuZ4amA6drnuVZ31' # end
-'JAxYqGvVkD1CAMpJ61L4X0qUlVSo0nH4OkmG+8GGZSDuD8pJLQXOjrtx0gzaSY0WlznDk22kVLPFCN' # end
+'eNrtXHtz21Z2/yqwNjXJFiYB8CGSNqXqYWU9pe2s5NhNLQ8HBEASYxDAAKAedTTjponjPO00yWaTeD' # end
+'bJPrrZtHGybXY3ceJmph8lMWX5r+1H6O/cC4APk7Jsyo0ztT1DXlyce173nN85FxR5YcpZmyoLU2dM' # end
+'vWkEQq3eMS395JrhrZnG+lNq00jO08yCYwfGRiBo4pMd1dNN1V4J1MAQ/ECsmn5wZKVTXza11rHAaM' # end
+'94GODaF+uOYwlex+YDf9N/aoMPg459Mpw1/UXDPx84bupCw7RV3HPcZWe9Es/P4iqpeY7vz22Y/pxl' # end
+'Nu22YQflmqauiL6raqbdLMuKqLWgpmfY5SPclJmzRzdc1dYNPdmwjI2yLHOScs2H5h1/AWYkNREGkI' # end
+'ZcOaZXKiUOrZSilQ3Vsuqqdn7O1s+0HLVtxkyw6JyYKi84VqdtJ3dV657yxd3kkJjDnhF0PFsIpY1w' # end
+'zsJdU0LaD7BMa+3uM7ORrHmaG5w2/RQbzKu2bXiQHe1qSuQ7xBTZmhKFqcZ6fwCN1v0eQRRtvh00Kp' # end
+'7RENKeoerJZkj1lOesmbrhCWnbCcyGaXipw5weUWJ6hhZUfBjYqOPicKhH29GNU2o9uRJ4MFaw6lYY' # end
+'hYYlnnZMfSFUU3DsU6qbqszEe873+knDh4+NRSMAe8dL1o2WumY6XrnWOumKbFGZvYaxQbapJrnKVX' # end
+'Wd/Ks5NrQ6Cm2O2b4R+NiBzXbbgD5aEvkVmJpqlYvpfEpU433r2y4Nr4Yn6obmeGpgOna55s07G0kY' # end
+'MFvT5kP2CAEoJ61L4X0qUlVSo0nH4OkmG+8GGZSDuD8pJLQXOjrtx0gzaSY0WlznDk22kVLPFCN' # end
 'bw8oRqdQ0/qVpuWy1L6VklhRBn//rRd3eL4eSkXEzdaQWy19OrJE5UctgZD9s7WX4d+3wWrxaktFSE' # end
 'NlI+lYr9PikH7g4QJz3VTfadX19bqYrjGK0djPkUKVtXwofcGJ7M6Yn/ef83nwq9F672rr91++ufb1' # end
-'/7Ve/i9d7ljxLxVqw0YA4yPQC1JkZhvJDYuvpJ7/UbN7/8dPs3z/cuvbP9h89vvffF9re/SJTHvBIe' # end
+'f7Ve/i9d7ljxLxVqw0YA4yPQC1JkZhvJDYuvpJ7/UbN7/8dPs3z/cuvbP9h89vvffF9re/SJTHvBIe' # end
 'P0dx7xmtWsPaTIgaYjLwugYDCXG3+5Mbtz1+t8F3R85HniYc9newPMo4GP/KldB4KHnz649uXbmQEB' # end
 '+LjBSTyLaura6pZoB0Q8ojM4xgmbI3CfTwDQq1AW7vfdjnFnpD3BUz5guOzPgHaIt12LcvdBx8YPpH' # end
 'neBQxw02UiwgIhsLg1tdGGNwE5nHYcgTTFuIOKbqbjVARIqJx88Bsiy1YVibQpI92LAKIi3DbgXtzV' # end
@@ -160,25 +168,25 @@ def apply_v118(od): # end
 'jSZVk8qydRC9V7vqkWsOEFVDq7NlzB6WJPWGdti3sB1P0LxQEdhn8tRpW+DDpxxrw4KZfCqcPGF4gb' # end
 'GelJW0IgpZ+oEjeUocQ1FKS6Ig59IFIimOJWFMIpI8JzkjCprl4GhQFniruCt9SsSjwBkVxsliBCOi' # end
 'hily6WKfYnYaZbJMVjGtjBNTZDaXmLAJbsmzlzuRKEDlQRHQ03MQeJzoGIZpUo5enkmx/dcd7WwU+k' # end
-'dxcG8x4FvC7BIO9uhFGA6yECmji2B8/HTDsQKRxXw5UQXmsahKpGKGYYLcjeFwqE1g2Na9SEGWai6S' # end
-'5LgZWFFSQSuaX6GHdEAvlLTTRMU1OoBhuqjj9RNIHLEL1aM2KmKGk8KA3B2BleHqrspWuqH6BjlcpA' # end
-'vOavjAECN6SLNi0TACU9vxaoN/A9VX8d6N5xxWWXOaVl0XIeNjKzbHssJ5s22oOtNwLL/R7xupIWGA' # end
-'yg6He7FRqPdjMJl1gdvfvtl77xfCzt7AYYxCTWYy+BXzbqwYbAaIWb8boGaXcqev3lAduHvMjKnF8f' # end
-'7ew41C/0IhFzUXhzvwdVr10dokE+zDz5g057PSkHbtViK8YZDzYnjMx6hpBtTxLJsBPLFqeHGY/DAe' # end
-'5g5GGHEXu8BSHw4+depUAchZUgBnp4pSNJqdBdQpRTbMY1go0DBfiocFhRPQ+NSsLApFRpwHRHKCLE' # end
-'b5HI0UKRplsajA6TBXZJJC6YxPAfxLMg1zmC3y1bmIt5yFSElijEjRUsSoVIwZFUKFIKhYiGYLUqRa' # end
-'llHmqIyyuRzMzHGFipFqhSITyPnkIj5FqFZgCstSPloky/0hzXICIp1li2bBqiSFrApsjGEJdhRlvq' # end
-'gQuUGWSWVmUqkY7wetyTJOA8bJWTxk+aocZOUZV7mQjcTKpLYszfIx7Rm3WyZ9QMedqQyMaYsVzjEL' # end
-'l8yG5ssKbSxnL5f6NHIhXlvK9dlIIRu+lmTxLczRcJYNi0o8lDkF55gv9MclRsNYKgqNuQaKTKL4Xo' # end
-'MxjTmfPGgUKdQyF48pmGXuR6YAd6QSEjAdKcoUWYkUUyTuPhKqyNymwsC4RORSnisAlorCdzHPxrOx' # end
-'UeGYFFAUHnvERcmeIbEzwTraR7pxQPqdm0GF9hxTz/j0C2SakfE9LUNQl/EAMLqHQ2zDMoA06fWORY' # end
-'A4t8q+CxDwaPvlcHXl9Ew7CNxyJuNrbaOj+unwBSCik1Hds4xbOHd6hjc3nEPgOJa/83pGEq0KX5QZ' # end
-'4mGdkpN0d/QlR8FJb+kX5agxP9lnMYnkHwYYRTRMnTLaAMcz8OYE88cx1Q8M7/TMPNHMufQVWMQLvr' # end
-'bYyR7EP1lm/52eid8S6ZIaqHh5BGBRUmrYN/wEAgLfakA/IF4NyEcfiAZM/vPpmcxUcoCXxWINgASW' # end
-'wMl8rgaMxE/kZAHzklhUakyXqSUBUUtyDXFehIwcSQWKAkRrQNBSiUSVikxUYXqjFLFYIF4FiUzLFm' # end
-'vA2axUA8bmYFSRTAO2FvfAfTmSBJgtKDUCHbAnJKYPPGESr2YLNaBdSZpeGJwj1YDZRblGeI2tIawu' # end
-'lmrAaYoWvM/WZvfEhYTsWfAHquelGiE6zCA0B5jXCMkB5DVCcbyqEYLzT4SoglVA7tnpnUuYX4Rw4D' # end
-'3jCqwnKcB5JkxiwqaXAhsQkgBmmFcD+NKHzGYhE9WAfZZoPlujKoAiUKMKgAJQI/QH+NcI+YHlNUJ9' # end
+'dxcG8x4FvC7BIO9uhFGA6yECmji2B8/HTDsQKRxXw5MQ/MY1GVSMUMwwS5F8PBUBvDsKV7kYIs1Vwk' # end
+'ySkzsKKkglY0v0IX6YBuKGmngYprtAHD9KCO108gccQuVI/aqIgZTgp9cncFVoareypb6brqG+RwkR' # end
+'5wzocXDDGiizQrFnUjMLVdH23wT6B6Kt6/8ZzDGmtO06rrImR8bMXWSFY4b7YMVWcajuQ3/HkjNSQM' # end
+'UNnhcD82CvV+BCazLnDn27e67/9S2N0bOIxRqMlMBn/EvBcr+psBYtbrBqjZpdzpqTdQB+4dMyNqcb' # end
+'y/9/FEofdAIRc1F8fa8HVa9dHaJBPszc+YNOez0pB27WYifMIg58XwmI9Rwwyo41kyA3hizfDiMPlh' # end
+'PMwdjDDiLnaBpT4cfPbs2QKQs6QAzs4WpWg0PQ2oU4psmMewUKBhvhQPCwonoPHZaVkUiow4D4jkBF' # end
+'mM8jkaKVI0ymJRgdNhrsgkhdIZnwL4l2Qa5jBb5KtzEW85C5GSxBiRoqWIUakYMyqECkFQsRDNFqRI' # end
+'tSyjzFEZZXM5mJnjChUj1QpFJpDzyUV8ilCtwBSWpXy0SJZ7Q5rlBEQ6zRZNg1VJClkV2BjDEuwoyn' # end
+'xRIXKDLJPKzKRSMd4PWpNlnPqMk7O4yPJVOcjKM65yIRuJlUltWZrmY9ozbrdM+oCOO1PpG9MWK5xj' # end
+'Fi6ZDs2XFdpYzl4u9WjkQry2lOuxkUI2fC3J4luYo+E0GxaVeChzCs4xX+iNS4yGsVQUGnMNFJlE8b' # end
+'0GYxpzPnnQKFKoZS4eUzDL3I9MAe5IJSRgOlKUKbISKaZI3H0kVJG5TYW+cYnIpTxXACwVhe9ino2n' # end
+'Y6PCMSmgKDz2iIuSPUdip4INtI/0xAHpd2EKFdpzTD3j0x+QaUbG97QMQV3GA8DoHg6xdcsA0qQ32h' # end
+'YB4pE19lmAgEvbL4erK6tTrSBwy5mMr7WMtuqnwxuAiHZGdc8zbuHc6hRvbjiHwHEsf/f1jCRaFd4o' # end
+'M8TDOiUn6e7wTY6C4+7SH8pRY36mx2IcyU/7GEU0TJ0y2gDHM3DnNPPHsuoHhrc6NUM0R1z6CCziBV' # end
+'9b7GQP4p8ssX+rU/FdIl1UAxU3jwMsSkoV+4ZXICDwrQr0A+JVgXz0hmjA5D+sTmUmkgO8LBarACSw' # end
+'BE7mc1VgJF6RkwXMS2JRqTJdJpYERC3JVcR5ETJyJBUoChCtAkFLJRJVKjJRhcmNUsRigXgVJDItW6' # end
+'wCZ7NSFRibg1FFMg3YWtwH9+VIEmC2oFQJdMCekJjecIVJ3JouVIF2JWlyYXCOVAVmF+Uq4TW2hrC6' # end
+'WKoCpylacD9bnd4XFxKyZ8EfqJ6XqoToMIPQHGBeJSQHkFcJxXGrSgjO3xGiClYBuacndy5hfhHCgf' # end
+'eMK7CepADnmTCJCZtcCmxASAKYYV4V4EtvMpuFTFQD9l6i+WyVqgCKQJUqAApAldAf4F8l5AeWVwn1' # end
 '+kTiYgljii1R2OTUmiJ3UCJIRZSHGtUGlIMa1QX2iZqAklCjeoByUKNaAPhnptAnVEIJqJGiSjbUZS' # end
 '7DIXye3zjstgDUQ4JHhWBPCkG2WF1aLj74QrCjnD0tBDtbtKeFYGej9rIQ7CxpjwvBzsL2thBIhxbz' # end
 'h0o/bCHYWYe9KgSSUswdnP0xFIIdNf0/KwSq604uApbatYHMXr3j2I7W9pzOo4JwLwWh5TldN2bma6' # end
