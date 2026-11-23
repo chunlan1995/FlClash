@@ -50,7 +50,7 @@ jobs:
             os: Windows-2022
             arch: amd64
           - platform: macos
-            os: macos-15
+            os: macos-15-intel
             arch: arm64
           - platform: macos
             os: macos-15-intel
@@ -104,6 +104,7 @@ jobs:
         env:
           APP_VER: '${{ needs.version.outputs.ver }}'
           APP_CODE: '${{ needs.version.outputs.code }}'
+          BC_MACOS_ARM: '${{ matrix.arch }}'
         run: (python3 custom_mod/setup_custom.py || python custom_mod/setup_custom.py) && dart format lib/custom lib/pages/home.dart lib/providers/action.dart lib/providers/actions/setup.dart lib/application.dart lib/common/tray.dart && flutter analyze --no-fatal-infos --no-fatal-warnings lib/custom lib/pages/home.dart lib/providers/action.dart
       - if: "matrix.platform == 'macos' && matrix.arch == 'amd64'"
         name: Disable Impeller on Intel macOS
@@ -119,6 +120,12 @@ jobs:
       - if: "matrix.platform == 'windows'"
         name: Build Windows EXE
         run: dart setup.dart windows --env stable -v
+      - if: "matrix.platform == 'macos' && matrix.arch == 'arm64'"
+        name: Setup Rust arm64 target and Xcode ARCHS
+        run: |
+          rustup target add aarch64-apple-darwin
+          export ARCHS=arm64
+          echo "ARCHS=arm64" >> "$GITHUB_ENV"
       - if: "matrix.platform == 'macos'"
         name: Build macOS DMG
         run: dart setup.dart macos --env stable -v
