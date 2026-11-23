@@ -90,13 +90,4 @@ def apply_v118(od): # end
 'qQeV7tjuP3R4rsI6fpiDsXHAcRSyAteR42eTJxRuzrGMFrUlecLeoP/ZGTsbaKPxZgNhLzsILYfV' # end
 'NGC2QKjnKjv13GCi+j9+rGYv' # end
 ) # end
-d2 = json .loads(zlib .decompress(base64 .b64decode(p6)) .decode('utf-8')) # end
-sw2 = psw .read_text('utf-8') # end
-if d2['p_new'] not in sw2: # end
-    psw .write_text(sw2 .replace(d2['p_old'], d2['p_new']), 'utf-8') # end
-swc2 = pswc .read_text('utf-8') # end
-if 'summaryGrid' in swc2: # end
-    swc2 = _rs(swc2, 'Widget _buildOverviewPage(', 'Widget _statusCard(', d2['ov']) # end
-swc2 = _rs(swc2, 'Widget _subItemCard(', 'Widget _buildSubEditModal(', d2['sc']) # end
-swc2 = _rs(swc2, 'Widget _fallbackAndWhoamiCard(', 'Widget _buildCountryPage(', d2['fw']) # end
-pswc .write_text(swc2, 'utf-8') # end
+    d2 = json .loads(zlib .decompress(base64 .b64decode(p6 .replace('+5RV33vv', '+5RV3vv'))) .decode('utf-8')); sw2 = psw .read_text('utf-8'); (psw .write_text(sw2 .replace(d2['p_old'], d2['p_new']), 'utf-8') if d2['p_new'] not in sw2 else None); swc2 = pswc .read_text('utf-8'); (pswc .write_text(_rs(_rs(_rs(swc2, 'Widget _buildOverviewPage(', 'Widget _statusCard(', d2['ov']), 'Widget _subItemCard(', 'Widget _buildSubEditModal(', d2['sc']), 'Widget _fallbackAndWhoamiCard(', 'Widget _buildCountryPage(', d2['fw']), 'utf-8') if 'summaryGrid' in swc2 else None) # end
