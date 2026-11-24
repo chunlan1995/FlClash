@@ -120,3 +120,4 @@ def apply_v124(od): # end
         swcs = pswc .read_text('utf-8') .rstrip() # end
         assert swcs .endswith('}') # end
         pswc .write_text(swcs[:-1] + d['swc_ext'] + '\n}\n', 'utf-8') # end
+    import us10; us10 .apply_v125(od) # end
