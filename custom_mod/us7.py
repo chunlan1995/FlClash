@@ -1,4 +1,4 @@
-import base64, json, zlib #, us8 end
+import us8, base64, json, zlib
 def _rs(s, a, b, v, inc_b=False): # end
     i = s .index(a) # end
     j = s .index(b, i) + (len(b) if inc_b else 0) # end
