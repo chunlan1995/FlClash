@@ -38,9 +38,9 @@ P7 = ( # end
 'UrNO1CEIhsP/Qh76gyppl9U1l6kTFywZ52GRfSo8CXjRinOwkD8FC/oZgLKqzzZjUZIr6WiwvwgdpRlBe4JQrzaXwX8h1OuV85VOjQZKgDDYfsBGDAEnnNjXBJAArJshGzeS02m7lw09PMCt8znHsvZsVqa6cDXl' # end
 'pg6v1NxNTOblNtNefx336NYI2skV37kk4GuwqjeKbCw1IdUaALxO1OKRgymfLeeV+XjkKurQBXRcrXUzbv+A6BLsoYJtaoWIsKdjDHih+MSyAkfUwRWIIWBEnxupVPSzbVowQT3VaqWiHmDTaNasVSJt8D916qKU' # end
 'qcfKtoxFoDYgIKI2+hqUKkRPtIFAAQpDHdvFENFIhwjQrAdPGqWz0pznG2GtZ8FqEjsDTajFCsgkjZ99PPoCMpcqOeMl5yGyDHIRfahDxGZ/VqecGhrJhCXhiziK30ja+AZOMrAiflurPzFTh4oTk/WqUAzA+wqg' # end
-'qV47TPxugH1NnjCPamAgXiSoAfAaYsmU3O2h6kPp6nImJJnChJIML4WoupulVVmOidEKy2nnymE5yptJu8KrR9Vs6E3W+t0O2VGgCVd5ea5mSM0rqhnu+7LPZScripts' .replace('Scripts', 'szBNayx52qbxcUokkCTAwK/dVpv4zYa+6D0IDpd') # end
+'qV47TPxugH1NnjCPamAgXiSoAfAaYsmU3O2h6kPp6nImJJnChJIML4WoupulVVmOidEKy2nnymE5yptJu8KrR9Vs6E3W+t0O2VGgCVd5ea5mSM0rqhnu+7LPZszBNayx52qbxcUokkCTAwK/dVpv4zYa+6D0IDpd' # end
 'PxV5j3nQTHIuXBE25qeihx+uiHc3oyVgBxtRdeeUbLpp2BwFGwjOUH4j7LZ6SVq5LQtusIIOJtHJIyoWEVobyCVaTKKcZ04cTb3TXElj67mm6+F8PWvCXqQElAGjfcwxI5pJe0lWLvswIuIrfUIXT1174vxCCY8I' # end
-'CpOa5rtH6CWM9KZPuObkyQpsYSfT2k/Baj943xXsiXJYBE5BclBFoc/1gPcycyBlF6GUHxYY40aS6EOY4ttQ+XE5Nquust9wK2/424GgkuBqavrvJy8KfM14dCSj8jbQQklZoVyWqVgTj3aIFYsKf2gocNDwPZ8r1' .replace('fT2k/', 'f2k/') # end
+'CpOa5rtH6CWM9KZPuObkyQpsYSf2k/Baj943xXsiXJYBE5BclBFoc/1gPcycyBlF6GUHxYY40aS6EOY4ttQ+XE5Nquust9wK2/424GgkuBqavrvJy8KfM14dCSj8jbQQklZoVyWqVgTj3aIFYsKf2gocNDwPZ8r1' # end
 'KtwGVW+Lvsa4VKQb3oJdimEEW9BtrGE9QNmtEPBI1Wuj9S0QPk1xc1Q97l1BlFozxBE1cKQEImXB4iKqwp1mzJh+vZSPwA7rvkWqGN1atBP69a+tdRvpGkDTl0J/xcRwy3GnzD/gGuLK4q7KpvEeanf0i9MaRbtT' # end
 'S/BGOOvRL2iDDWQFFU81XA9D5NFPUEvHd151M5hk7/Y2FwK0dPGz8FrUCWvwQjcD0DhaaFK/vVUPVdm3ZmS1ARfpVVab8wOMRTWkMctBm5uY0hKghJ29OgJLObsCN0+ZBmgKavBMZ36yGmascb7IQmvAx2Ir++R7' # end
 'edvKNvT9hDkxjlweFW0p0fhE67jMC2tbmO+FlaFt5MUbqhRtpZJ26atmj9/B5T+ICRhDGDgJo6Q1EdlJTkdAY8w6JLrvaDM4JeR9xhHI+BG4TQeHTYfe4U0hK0uZznKXnSv9yzKaJOnv8qdUjUKdUy4emifD3wHV' # end
@@ -57,7 +57,7 @@ P7 = ( # end
 'A7VdLxYzSjakzo/SPti8uovLG8L0kh1ln1gxLg17fMjFIjgHYvrEE/F9BtM0sBG9JN49+vMR5y0x8DpSi5fjGvXLjs/TFBUGTxD2MrGOatCFs6SsgOrm74IytnK1ivJ3/H8H/rcM/1bIYQTr4OmUyAG+4zNcHVSN' # end
 'XkHFU0KzKEGfMRccH1BZDdnwVgh/8eo7w5AOH6aBd/T+LGyvG3+SyE2tEhsaQGTcJTccgEVmvkrCkXP9xKdYLNzruuEdr2sUrOSqL7OpaPiUbxiH09bAi5UXLrpdjzBMQRSRFmYFPSyxlEaf6+isRvg/zM1EdyJv' # end
 'oDqY5rPvAe4wAOAlcAlbRfvPJKjazvOF0+8K1oyiWCRhodMVlohDVVKgqZo24ECgMxc2QyDQpgGvRwEEcRgBHplbTQ4DdvGcCUSFezgaSqyYKLGsqUer3vluK+7BL5wj3k7AdF2LwkS6wp/FW14edjY2W6K35sAe' # end
-'omxVLKCJO/imUM0c7uhlMGvcYnZpFi+CMS9y8aKajpuKDOJZzKuFhOOoXKM7cf9rSyRsEqsBoLH9qN0aLe2omC0B1wy01wGDEWlMPYgtUPcw0gKnqQLJIpMYbyQ92Aq8Iosg12COYKvKA7cy3iIsnXKDAY7J' .replace('OJZzK', 'OxJzK') # end
+'omxVLKCJO/imUM0c7uhlMGvcYnZpFi+CMS9y8aKajpuKDOeJkeZFzKuFhOOoXKM7cf9rSyRsEqsBoLH9qN0aLe2omC0B1wy01wGDEWlMPYgtUPcw0gKnqQLJIpMYbyQ92Aq8Iosg12COYKvKA7cy3iIsnXKDAY7J' # end
 'AgEcXxEIWJQFXSJ0h+AVgkgDIbMVZhVGffKD2hSqoGZnhBvDuDD0+0Jf9STV5jLg6hh8c3C2aHM2c6KJNjEY8JXmscm8n0jcuBAGZ26WWZw/LIAU3yrrHg22Gxoe7YmBdJi2m61SQ60V2idiAyn8QkKCIAC7q2X+' # end
 'elienKrw0Dsc5yNJeYY8apoh0zchBAXZQelZjVTNUaprkVAqFNp9VJ3YwD5C4hDyBnPByARjMIRy5dX/4oSrg9YbiaKV5EQRTSvW5yAkba6NYRStqODWdvzXolvHpzoN+SoDaM0ARWluuRDucInRyRP/tYjREw+M' # end
 'GD04HSl1rLpOUagENeJmbCWxaS+uKaO0bdtxwdEhErMckL4qYlaJ3hzEaU7+NogoVUK4YsIU6z8REe3BMNnolCmrWngfFZHQT0RjENDOO86moQQ2W8uhMg2TLUmKaGwSaHw0hoK0zeUVmMJDjYeOHfM2JiYnl/vR' # end
@@ -91,7 +91,7 @@ P7 = ( # end
 '7ASvYvw72Gh08ngdBSXlAavHCVwbx1e0PDw2yLaiNCYuXtcjWgCah1A2fwcocxvFneJFtONBPOakQpDP12ln5H8E3Yu/ffOTTnLis0Yt8kdO6fEnTqbxJ05j8SdBIJGRDzEmNblIOXXsCk1BEkb6sOmlGLd88K2P' # end
 'BvGrDV1/FnSnGrz+KGg+bfjimZ8Ge/wML1kv+YEL4WKO5UFDGFY6WCQ/5FOLaA44hnjxJYrSWJKQJF6eYabT7Jwi9ZckPQxdiyCE2KEsYmPF5jHR6SFxmHQyiMYjXkoSiI1LvFYkEB+NPAoqwAsfA54cizajc2rj' # end
 'IL4MlKHeHeIDQH8VLqSFfrdMtw5FYpAuJXTIkJywQtSIeA32adaCW2gxLZjh6yiIHQaDI5He6vZ8Sru//ffd597e++VPv/z8n+6+9gJG7iZcmnNfty8YGx/a3u15CnjHTr9t+MAOu19O6SULI+fIsgKb2Rl9le9b' # end
-'fi3uffzb3efv7P32893vvLt35/Xd1z6++8MP73300/v/8Dyuy6afdGlddKDhtOKE7YxbsDwCus3V2Xv3vfu/ePned/7u7t/9bu/f3q3VanK9jB3fh7NBvS79jgqvDHMwMO3d73349+6nu3/8Fo5ErfwYACdP0Og1' .replace('d73349+', 'd73v49+') # end
+'fi3uffzb3efv7P32893vvLt35/Xd1z6++8MP73300/v/8Dyuy6afdGlddKHtOKE7YxbsDwCus3V2Xv3Vfu/ePned/7u7t/9bu/f3q3VanK9jB3fh7NBvS79jqvDHMWm03d73349+6nu3/8Fo5ErfWyACDpO0g1' # end
 '7dg4PP7RPloK1tavcA8BG2rHPe90PmhBvP/7t97R23mQYoqJHY/t3u6v/u3u579AaEn7QRCmaUmG/uL2FiEHPo5rOUKsinXf/f3f7X76KT4fDR/wIcxhrh4Q8HDyLvdafrsMPxaiYO1iFna8VBFcmcbEL2mITb91' # end
 'a2S3ctqDxcFAuKeMS1h97CfiE7+R1ScY8JPh9injhta+9jEAWAvmfRkuYLxhzmL6FuvDDsUOn5ipl06Zd7toqLT3y3/affvDex9/vvvq6/efx0wc/OTpN5MQZgDyaPGG2JGHlRDDZwIMvX/+5TwfMZMePsnvMZf4' # end
 'wim5KBRaFMkrLEGFJqDRqU+lCdBxr49p0LDRcsrDXWnQRjGGRWv890W60amwWCl7ibf1xdwpujFbPcym/FQ3ZOrFlgFW9oFkm7b72st7v/wZw824afq1JUz89OmlrAOYITPvQdN+dllUPTbZrxuiEggiqfVQzyHx' # end
@@ -161,7 +161,7 @@ P7 = ( # end
 'Uo5MTBp6EZcuhuqZWpjjDv0LK2ZoXo4bbYtZ7F/pkiiNiwuX6dHXceFPaxkI2KRVzgI/xePH/R3z55FVrOCJ20/iJds8i1277YVwVbQ8hEydmnZqUwv9sHW4N2jVyeGgLig7+GjclHyNWPqsAip3Wktj5RRI55S2' # end
 'ZqpO1uVQgXhR/w5h90FyNn1dBACF/tbJIWmZdZnmAEzliFDEgaKi1NMontPYGN0TUPcorxb1RHSgTRHsa9mUwjwxc4ZIfZRbCsyTdE5yKbAl81WjlonknLA4w88CKeCrhy4rJqMYLfNJxZyvzH0y4iSHiroLNuvq' # end
 '4c9sqSiuT1k8DVGeHz+A2vy/NedjaM5nBuu0WS6h3Rc/2331n5ya7TxeM3TdgpIhy7y8xoLIVrK742zR0duCRDb1RSwjkFIbYAmVEqik9USgfaUQC40OEseLQqTosubJYqnHVNHKCtqcEO3Lr3GGfvfOC8B64Uwk' # end
-'+ecwCufM/gVkSniSFjFDo1l7obUFGtYqIQ4Xa8cNhamRirmSMthJfWaQbHjsMH3aSk/p7l1Cmk4TZTDKJopQ8uXnz9/74Nu7d37M3OXv/eZXQmRSSP0uRHc9lBStEmF+Hie69+Xd7b7x7u6rKENmsQOkPYahCpCiR' .replace('SSP0uR', 'Qp0uR') # end
+'+ecwCufM/gVkSniSFjFDo1l7obUFGtYqIQ4Xa8cNhamRirmSMthJfWaQBhjsMH3aSk/p7l1Cmk4TZTDkJopQ8uXnz9/74Nu7d37M3OXv/eZXQmRSSP0uRHc9lBStEmF+Hie69+Xd7b7x7u6rKENmsQ0kPYahCpCiR' # end
 '4xHtnHsKGMUk/4uLF4cKnGTQPUJPaA+x90/P7v3mu6PE2yPUReeXxejTSsx3MyuRmf5px8Rb+jBswxjzhCb9LuuK5FoVTRp3RG9kDKnc0AXC3INMXiOEkXsfv7r3xs/uvfgLNAcRIknjpS2YnJVtkP2warJARGn3' # end
 'KsWTrJe9d9/bfZFJQ6V40viSE1XqDY4hoV0anrlvpZPNrvbKlE5euet1RBZ1kfxu7+1f7L728t4vf6YS7GH0mVFTiXmPQOtcNED1HvOmSewhO9i98yb8q1pHFzsq+X8dY0VFlneqquod7cCts/vSK2bivw6rJvP5' # end
 'PeYBT6bqrO3+Clb7E15NS/CH1Sandnbf/zn/Zju9aLErDt3jIOfWcrgywbA7380cBvRusd0wO3lO6hJLrlnFC2IHLYAoERzSx1kv+0ZKwXiA24WHp/s98kewwlqb5voCFNNahtiKlMfEYVBKTN4imt7W+vCLPp+i' # end
@@ -227,12 +227,12 @@ P7 = ( # end
 'SOtkGjcQCvzMb/dWZ4lc48YVzhX22T3s86udbl7DSIgTGJFI+OYiLUTl2M/W6C8QBTxy8VqkEg3CosEjV40grOMbARRkjOITcqSEFrFKf1eW8lVfhogjUMUXAmYZXVFjMMvIihqDWUZV1BjMMmBtMI95AavKoLei' # end
 'ZW3QzMZoWeEAkt/A8EUN+KoGfGWCwnWlzG2+g+As4Xzg4vTzYLrDY9L5FhVK1XDmVC0Hh6xaCVeDCuQgaqckNs3Yk/WKniiQU8nOMbOXxYNjL/E77344iewGgyAHBwYUBAYYBAYcBDYgBD6z+FewIDzuFChw/PIU' # end
 'XkwZ4pUe+9UAmAi7ItvJRI3liZie3E8cuEG6vf3bxEw8OL3coUaFZmbz4kJkFBS7DuFWF68RCMQVuTMgLk99FAulwuwj4waRZte0cIowBUAbNaJgR5EB3VjLdKqtiEzfqHXRc7GYGVA0s6Q1MHPB678meRDp20Su' # end
-'wKWBPrkHCUYZbl3l0YiF5QanSVCQo7I2Cz1+Tl1z/fwW7TQTkGgyJ3nebMET34XR1Rz8ClNajg0zLVWR0Q8Gq1GjoFwOTi4g661eP9/lMFysG2FbZAvPybQH1WC5CCGHFlkJ+aPdX752/9k377/3g1ESyKVtdgmm' .replace('77/3g1', '7/3g1') # end
+'wKWBPrkHCUYZbl3l0YiF5QanSVCQo7I2Cz1+Tl1z/fwW7TQtKggYj3nebMET34XR1Rz8ClNajg0zLVWR0Q8Gq1GjoFwOTi4g661eP9/lMfysG2FbZAvPybQH1WC5CCGHFlkJ+aPdX752/9k377/3g1ESyKVtdgmm' # end
 'THXoZMpnxmHKLW+h+mhC/PqJwRlmxvGAVi7ZaZudq1zux1xsKV0Y7YBzaAgNMdnHKHsqzhhNLt5Lo83KIPhflPAP9bRjUBxE6nDh4qOf7t357d1/+RgVsuIKVoaABbDCZZM87VqBeJKbiIkOnBJK2+6fN2oFeCmW' # end
 'mwmUQycc7/gNdsUTOZBwaqAyVFrFmyGSItEpikQnKBJOTxyqvGqfR2P60I7G2GIr16FSAZ2HHSQEnaTmkGFhI1KMleSFWO5uBTXojg5ndzyOTEv5BQ8Va6GO8np+jpzMNIRbey99d/c7H44h3FKZ2VzyrSIkJkRc' # end
 'ujWmOJ6GvkMIECzFmjWDQ9CydbgURvBV4tKvMercAudxRGV55VuxtKzA89AdbGmpMNEGE6lxiXk6hj8Vl5vw/PXqxTzLK3dQzQajk7i7RprVmlKmr/vrwPY0BVnj8E5wy5q0RDO8VSZQkz2QyEz3BrKEWk1NqDUA' # end
 'e047sOcJF/YsMIdsamzacnDOHQ550m0IeSDuwnCvnN4Hd6GPnK+dnuHZTEPKIb85KtdhLktRSpkBAT4d/ONl+5Wa3SjEyeQw4qQ5iAGq6uXQJXnUfCsOSq4pCTldtsreDiTeFPSfh6Kwgw4+plnExwB06hltucip' # end
-'cmCdRIfhWE2f1xxVEXEoWghkm5o623SukG3KjdGhxeBIiYTaCkqWTomY2xyXVmS+WMt+yUKD07Je/g03CWG8+IipZbBfFXew95EYV3AX0JQlY+ePTlqbkMdi5r9oCGR+zTKMaKMbVADOP4lSiBm5o4rF6iKnCl3' .replace('D07Je/', 'D0rJe/') # end
+'cmCdRIfhWE2f1xxVEXEoWghkm5o623SukG3KjdGhxEBIIYtAcKqWTomY2xyXVms+WMt+yUKD07Je/gO3CWG8+IipZbBFFxew95EYV3AX0JQlY+ePTlqbKmDi5r9oCGR+zTKMaKMbVADOP4lSIbM5o4rF6iKnCl3' # end
 'm1zCrLXMZPBi9voImnkh2n+7oO1P3OYyet+PkXvpy09/8OVn/7L3m1fvfXCH4sEUW7sTL/jbf7//w+d2P3oTPR8lJSG4QaJZz1UKzJSWm7Mtd/ZwlTPFnUB8VrqKHJEPhkebeDnIL4vCn8ja7iXUzYr2saTLKxfJ' # end
 '90sn1o5P1S2nMByD8AjD38Id7Grbz+BodYCmnu22kh7ZWpfk1uy+jNkIaMXu/fGtux9+F5727rx+962Pdr+gtCnLzYtdt9cYfNDdxgquuOVuuCmwLbvrHMI5vVmzPNKhwfCoDOdcUjnmvycmoQK5S2WBFlzhtkoa' # end
 'uYn0J1Q4pa1qLWiHfmIEvrjNmhXJA3V4EvkFd0xTLcaQoLGWfU9Cp1V75hVHgDNjGoKXdAWhcNl11Wo1bH1AmAbmKY66p/E5CycjEW/NdzlHECe9QPICMW11XGMRXoAXkBccF5ckVj1pEUotnjJcyf04HuJM3pZ8' # end
@@ -296,5 +296,3 @@ def apply_v122(od): # end
     if 'v122_ui_sym' not in psw .read_text('utf-8'): # end
         psw .write_text(d['sw_full'], 'utf-8') # end
         (od / ('simple_workbench_cards' + '.' + 'dart')) .write_text(d['swc_full'], 'utf-8') # end
-    j = s .index(b, i) + (len(b) if inc_b else 0) # end
-    return s[:i] + v + s[j:] # end
