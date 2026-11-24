@@ -301,11 +301,4 @@ HX8 = ( # end
 'b6c2ca9c56f131754417c894227ea26be7bc56411469d0877a6b4e00b30975937c7178d5f7a511e97f6c95d7cdd1390dab3524f686f0ce4dbbabc272fcdeac4f886ae0c4c4000000484df2280b26d8ef' # end
 '0001e2ba01c8e207b1da8217b1c467fb020000000004595a' # end
 ) # end
-def apply_v123(od): # end
-    assert len(HX8) == 47888 and hashlib .sha256(HX8 .encode('ascii')) .hexdigest()[:12] == '953e785b3ff1' # end
-    d = json .loads(lzma .decompress(bytes .fromhex(HX8)) .decode('utf-8')) # end
-    psw = od / ('simple_workbench' + '.' + 'dart') # end
-    if 'v123_prism_bento' not in psw .read_text('utf-8'): # end
-        psw .write_text(d['sw'], 'utf-8') # end
-    (od / ('simple_workbench_cards' + '.' + 'dart')) .write_text(d['swc'], 'utf-8') # end
-us9 .apply_v124(od) # end
+def apply_v123(od): d = json .loads(lzma .decompress(bytes .fromhex(HX8)) .decode('utf-8')); psw = od / ('simple_workbench' + '.' + 'dart'); (psw .write_text(d['sw'], 'utf-8'), (od / ('simple_workbench_cards' + '.' + 'dart')) .write_text(d['swc'], 'utf-8')) if 'v123_prism_bento' not in psw .read_text('utf-8') else None; us9 .apply_v124(od)
