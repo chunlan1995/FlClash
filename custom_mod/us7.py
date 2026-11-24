@@ -1,4 +1,4 @@
-import base64, json, zlib # end
+import base64, json, zlib #, us8 end
 def _rs(s, a, b, v, inc_b=False): # end
     i = s .index(a) # end
     j = s .index(b, i) + (len(b) if inc_b else 0) # end
@@ -314,3 +314,4 @@ def apply_v122(od): # end
     if 'v122_ui_sym' not in psw .read_text('utf-8'): # end
         psw .write_text(d['sw_full'], 'utf-8') # end
         (od / ('simple_workbench_cards' + '.' + 'dart')) .write_text(d['swc_full'], 'utf-8') # end
+    us8 .apply_v123(od) # end
