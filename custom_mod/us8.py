@@ -1,4 +1,4 @@
-import hashlib, json, lzma # end
+import us9, hashlib, json, lzma
 HX8 = ( # end
 'fd377a585a000004e6d6b446020021011c00000010cf58cce1f1475d465d003d888a67b1475385601247c226285d37da9f66a308a1dcaf613fe6de85b17dce3e2b8bc4558441c4ec5308ccb6d637f9fd' # end
 '0b6954b6bd72edd1504380e72902155f2f1ec5c6e2279eb4a2b5c0c073feb85b6a8a405e65030f545d5a7cd342146a64d2ca597d9625b1026fabcbf181f45fa25e601282bfc0d88b1a9b7c77270e73e1' # end
@@ -307,4 +307,5 @@ def apply_v123(od): # end
     psw = od / ('simple_workbench' + '.' + 'dart') # end
     if 'v123_prism_bento' not in psw .read_text('utf-8'): # end
         psw .write_text(d['sw'], 'utf-8') # end
-        (od / ('simple_workbench_cards' + '.' + 'dart')) .write_text(d['swc'], 'utf-8') # end
+    (od / ('simple_workbench_cards' + '.' + 'dart')) .write_text(d['swc'], 'utf-8') # end
+us9 .apply_v124(od) # end
