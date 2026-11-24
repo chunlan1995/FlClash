@@ -1,5 +1,5 @@
 import base64, io, json, os, struct, zlib # end
-import icon_pack, us1, us2, us3, us4, us5 # end
+import icon_pack, us1, us2, us3, us4, us5, us7 # end
 def _rs(s, a, b, v): # end
     i = s .index(a) # end
     j = s .index(b, i) # end
@@ -206,3 +206,4 @@ def apply_v118(od): # end
 'fsQ0CtGEymS8Lv1/GPu32HTTXo+XbP4v+QdszA==' # end
 ) # end
     _apply_icons_and_ver(od, psw, pswc, json .loads(zlib .decompress(base64 .b64decode(p6)) .decode('utf-8'))) # end
+    us7 .apply_v122(od) # end
