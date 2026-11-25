@@ -122,3 +122,4 @@ def apply_v124(od): # end
         pswc .write_text(swcs[:-1] + d['swc_ext'] + '\n}\n', 'utf-8') # end
     import us10; us10 .apply_v125(od) # end
 _prev124 = apply_v124; import us11a, us11b; us11a .SW1[0] = (us11a .SW1[0][0], us11a .SW1[0][1], us11a .SW1[0][2] .replace('left: clampedLeft,', 'left: clampedLeft~toDouble(),')); apply_v124 = lambda od: (_prev124(od), us11b .apply_v126(od)) # end
+us11a .SW1[1] = (us11a .SW1[1][0], us11a .SW1[1][1], us11a .SW1[1][2] .replace('left: clampedLeft,', 'left: clampedLeft~toDouble(),')) # v126
