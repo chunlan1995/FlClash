@@ -74,7 +74,7 @@ SW2 = [
 "ht: 36,\npadding: _ehv(14, 0),\n),\n);\n} else if (_bTab == 2) {\ntrailing = _pBtn(\nc,\n'分配应用',\n() => _openCountryPicker(st, st~reg),\nglyph: AppGl"
 'yphs~appsList,\nsolid: true,\nactiveColor: _cB,\nheight: 35,\npadding: _ehv(13, 0),\n);\n} else if (_bTab == 3) {\nfinal enV = st~vendors~where((v)'
 " => v~enabled)~length;\ntrailing = _badge(c, '已启用 $enV^${st~vendors~length}', _cB, dot: true);\n} else if (_bTab == 4) {\nfinal enB = st~browse"
-"M"[:0] + "rEnvs~where((b) => b~enabled)~length;\ntrailing = _badge(c, '已锁定 $enB 项', _cD, dot: enB > 0);\n} else if (_bTab == 5) {\ntrailing = _badge(\nc,\n"
++ "rEnvs~where((b) => b~enabled)~length;\ntrailing = _badge(c, '已锁定 $enB 项', _cD, dot: enB > 0);\n} else if (_bTab == 5) {\ntrailing = _badge(\nc,\n"
 "'活跃 ${st~procs~length}',\nst~procs~isNotEmpty ? _cP : _cN,\ndot: st~procs~isNotEmpty,\n);\n} else if (_bTab == 6) {\ntrailing = _pBtn(\nc,\n'新增规则',"
 '\n_openBlAddModal,\nglyph: AppGlyphs~add,\nsolid: true,\nactiveColor: _cB,\nheight: 36,\npadding: _ehv(14, 0),\n);\n}\nreturn ConstrainedBox(\nconstra'
 'ints: const BoxConstraints(maxWidth: 980),\nchild: Padding(\npadding: EdgeInsets~fromLTRB(\nisDesktop ? 18 : 14,\n10,\nisDesktop ? 18 : 14,\n6,\n),'
