@@ -99,28 +99,27 @@ FB13 = [
 'yboardModifier> mods, int? key) {\nfinal ntf = ref~read(hotKeyActionsProvider~notifier), cur = ntf~value;\nfinal isBound = key != null && '
 'isValidHotKey(mods, key);\nfinal binding = HotKeyAction(action: action, modifiers: mods, key: key);\nfinal out = <HotKeyAction>[];\nvar pla'
 'ced = false;\nfor (final item in cur) {\nif (item~action == action) {\nplaced = true;\nif (isBound) out~add(binding);\n} else if (!(isBound &'
-'& item~key == key && keyboardModifierListEquality~equals(item~modifiers, mods))) {\nout~add(item);\n}\n}\nif (isBound && !placed) out~add(bi'
+'&& item~key == key && keyboardModifierListEquality~equals(item~modifiers, mods))) {\nout~add(item);\n}\n}\nif (isBound && !placed) out~add(bi'
 'nding);\nntf~value = out;\n}\nstatic LogLevel watchCoreLogLevel(WidgetRef ref) => ref~watch(patchClashConfigProvider~select((s) => s~logLev'
 'el));\nstatic void setCoreLogLevel(WidgetRef ref, LogLevel lv) {\nref~read(patchClashConfigProvider~notifier)~update((s) => s~copyWith(log'
 'Level: lv));\n}\nstatic List<BridgeLog> watchCoreLogsFull(WidgetRef ref, {int maxItems = 240}) {\ntry {\nfinal l = ref~watch(logsProvider)~l'
 'ist;\nfinal start = l~length > maxItems ? l~length - maxItems : 0;\nfinal sub = l~sublist(start);\nreturn <BridgeLog>[for (var i = sub~leng'
 "th - 1; i >= 0; i--) (level: sub[i]~logLevel~name, payload: sub[i]~payload, time: '${sub[i]~dateTime}')];\n} catch (_) {\nreturn const <Br"
 'idgeLog>[];\n}\n}\nstatic void clearCoreLogs(WidgetRef ref) {\ntry { ref~read(logsProvider~notifier)~value = FixedList(maxLogsLength); } cat'
-'ch (_) {}\n}\nstatic Future<bool> exportCoreLogsFile(WidgetRef ref, List<({DateTime t, LogCat cat, String title, String detail, bool ok})>'
-" gLogs) async {\ntry {\nfinal sb = StringBuffer()~~writeln('=== BlueClash v$appVersion Diagnostic Logs ===')~~writeln('Exported: ${DateTim"
-"e~now()~toIso8601String()}')~~writeln('\n--- Guardian Events (${gLogs~length}) ---');\nfor (final g in gLogs) { sb~writeln('[${g~t~toIso86"
-"01String()}] [${g~cat~name}] ${g~title} | ${g~detail}'); }\nfinal cLogs = ref~read(logsProvider)~list;\nsb~writeln('\n--- Mihomo Core Logs "
-"(${cLogs~length}) ---');\nfor (final lg in cLogs) { sb~writeln('[${lg~dateTime}] [${lg~logLevel~name~toUpperCase()}] ${lg~payload}'); }\nf"
-'inal d = DateTime~now();\nfinal ts = \'${d~year}${d~month~toString()~padLeft(2, "0")}${d~day~toString()~padLeft(2, "0")}-${d~hour~toString'
-'()~padLeft(2, "0")}${d~minute~toString()~padLeft(2, "0")}\';\nfinal uri = await picker~saveFile(\'BlueClash-Logs-$ts~log\', Uint8List~fromLi'
-"st(utf8~encode(sb~toString())));\nif (uri != null) showBannerMsg('日志文件已导出', kind: 'success');\nreturn uri != null;\n} catch (e) {\nshowBanne"
-"rMsg('导出日志失败：$e', kind: 'error');\nreturn false;\n}\n}\nstatic Future<int> closeAllActiveConns(Ref ref) async {\ntry {\nfinal list = await ref"
-'~read(coreHandlerProvider)~getConnections()~timeout(const Duration(milliseconds: 1500));\nawait Future~wait(list~map((c) async {\ntry { aw'
-'ait ref~read(coreHandlerProvider)~closeConnection(c~id)~timeout(const Duration(milliseconds: 800)); } catch (_) {}\n}));\nreturn list~leng'
-'th;\n} catch (_) {\nreturn 0;\n}\n}\nstatic Future<String> readSubYaml(int id) async {'),
+'ch (_) {}\n}\nstatic Future<bool> exportCoreLogsFile(WidgetRef ref, List<String> gLogLines) async {\ntry {\nfinal sb = StringBuffer()~~write'
+"ln('=== BlueClash v$appVersion Diagnostic Logs ===')~~writeln('Exported: ${DateTime~now()~toIso8601String()}')~~writeln('\\n--- Guardian "
+"Events (${gLogLines~length}) ---');\nfor (final ln in gLogLines) { sb~writeln(ln); }\nfinal cLogs = ref~read(logsProvider)~list;\nsb~writel"
+"n('\\n--- Mihomo Core Logs (${cLogs~length}) ---');\nfor (final lg in cLogs) { sb~writeln('[${lg~dateTime}] [${lg~logLevel~name~toUpperCas"
+'e()}] ${lg~payload}\'); }\nfinal d = DateTime~now();\nfinal ts = \'${d~year}${d~month~toString()~padLeft(2, "0")}${d~day~toString()~padLeft('
+'2, "0")}-${d~hour~toString()~padLeft(2, "0")}${d~minute~toString()~padLeft(2, "0")}\';\nfinal uri = await picker~saveFile(\'BlueClash-Logs-'
+"$ts~log', Uint8List~fromList(utf8~encode(sb~toString())));\nif (uri != null) showBannerMsg('日志文件已导出', kind: 'success');\nreturn uri != nul"
+"l;\n} catch (e) {\nshowBannerMsg('导出日志失败：$e', kind: 'error');\nreturn false;\n}\n}\nstatic Future<int> closeAllActiveConns(Ref ref) async {\ntr"
+'y {\nfinal list = await ref~read(coreHandlerProvider)~getConnections()~timeout(const Duration(milliseconds: 1500));\nawait Future~wait(lis'
+'t~map((c) async {\ntry { await ref~read(coreHandlerProvider)~closeConnection(c~id)~timeout(const Duration(milliseconds: 800)); } catch (_'
+') {}\n}));\nreturn list~length;\n} catch (_) {\nreturn 0;\n}\n}'),
 ('static Future<void> sw', 'await reques',
 'static Future<void> switchUiMode(Ref ref, bool simple, {VoidCallback? onStatusChanged}) async {\nsimpleTakeover = true; _ensureRuleAndPro'
-'cessMode(ref); _syncAndroidVpnAccessIfStopped(ref, true);\nawait requestApplyProfile(ref, onStatusChanged: onStatusChanged);}'),
+'cessMode(ref); _syncAndroidVpnAccessIfStopped(ref, true);\n'),
 ]
 SG13 = [
 ('// v127_zero_loop_guardian', '=', '// v128_pure_guardian\n// v127_zero_loop_guardian'),
@@ -178,9 +177,10 @@ SW13 = [
 '~periodic(const Duration(milliseconds: 1600), (_) {\nif (!mounted) return;\nif (_bTab == 6 && !_blAddOpen) {\nunawaited(_FB~refreshLiveHost'
 "sAndBlStats(_gRef)~then((_) { if (mounted && _bTab == 6) _upd(() {}); }));\n} else if (_bTab == 7 && _setSect == 'conns' && !_connPaused "
 '&& _hkRecAct == null) {\nunawaited(_refreshConnsSnapshot());\n}\n});\n}\n});\n}'),
+('int _icoTap = 0;\nint _icoTapMs = 0;\n', '=', ''),
 ('_blTargetsCtrl,\n_blNoteCtrl,\n]) {', '=',
-'_blTargetsCtrl,\n_blNoteCtrl,\n_impUrlCtrl,\n_impNameCtrl,\n_impAgeCtrl,\n_connSearchCtrl,\n_logSearchCtrl,\n]) {\nHardwareKeyboard~instance~rem'
-'oveHandler(_onHkKeyEvent);'),
+'_blTargetsCtrl,\n_blNoteCtrl,\n_impUrlCtrl,\n_impNameCtrl,\n_impAgeCtrl,\n_connSearchCtrl,\n_logSearchCtrl,\n]) {'),
+('_blPollTimer?~cancel();', '=', '_blPollTimer?~cancel();\nHardwareKeyboard~instance~removeHandler(_onHkKeyEvent);'),
 ('_blTargetsFocus,\n_blNoteFocus,\n]) {', '=',
 '_blTargetsFocus,\n_blNoteFocus,\n_impUrlFocus,\n_impNameFocus,\n_impAgeFocus,\n_connSearchFocus,\n_logSearchFocus,\n]) {'),
 ('shadows: DashboardShadows~e1(c),', '=', 'shadows: _e1Shadows(c),'),
@@ -218,19 +218,20 @@ NAV13 = (
 'es = false}) => <NavigationItem>[\nNavigationItem(glyph: AppGlyphs~dashboard, label: PageLabel~dashboard, builder: (_) => const SizedBox~'
 'shrink()),\n];\nNavigation~_internal();\nfactory Navigation() => _instance ??= Navigation~_internal();\n}\nfinal navigation = Navigation();')
 HKO13 = (
-'      case HotAction~mode:\n        commonAction~updateMode();\n      case HotAction~start:\n        commonAction~toggleRunning();\n      ca'
-'se HotAction~view:\n        unawaited(systemAction~updateVisible());\n      case HotAction~proxy:\n        systemAction~updateSystemProxy()'
-';\n      case HotAction~tun:\n        systemAction~updateTun();\n      case HotAction~ruleMode:\n        setupAction~changeMode(Mode~rule);\n'
-'      case HotAction~globalMode:\n        setupAction~changeMode(Mode~global);\n      case HotAction~directMode:\n        setupAction~chang'
-'eMode(Mode~direct);\n      case HotAction~delayTest:\n        unawaited(\n          ref\n              ~read(proxiesActionProvider~notifier)'
-'\n              ~delayTestGroups(ref~read(currentGroupsStateProvider)~value),\n        );\n      case HotAction~updateProfiles:\n        una'
-'waited(\n          globalState~safeRun(\n            ref~read(profilesActionProvider~notifier)~updateProfiles,\n          ),\n        );')
+'    final setupAction = ref~read(setupActionProvider~notifier);\n    switch (action) {\n      case HotAction~mode:\n        commonAction~up'
+'dateMode();\n      case HotAction~start:\n        commonAction~toggleRunning();\n      case HotAction~view:\n        unawaited(systemAction~'
+'updateVisible());\n      case HotAction~proxy:\n        systemAction~updateSystemProxy();\n      case HotAction~tun:\n        systemAction~u'
+'pdateTun();\n      case HotAction~ruleMode:\n        setupAction~changeMode(Mode~rule);\n      case HotAction~globalMode:\n        setupAct'
+'ion~changeMode(Mode~global);\n      case HotAction~directMode:\n        setupAction~changeMode(Mode~direct);\n      case HotAction~delayTest'
+':\n        unawaited(\n          ref\n              ~read(proxiesActionProvider~notifier)\n              ~delayTestGroups(ref~read(currentGr'
+'oupsStateProvider)~value),\n        );\n      case HotAction~updateProfiles:\n        unawaited(\n          globalState~safeRun(\n           '
+' ref~read(profilesActionProvider~notifier)~updateProfiles,\n          ),\n        );')
 HKN13 = (
-'      case HotAction~mode:\n        unawaited(ref~read(guardianProvider~notifier)~setFbDir(!FlClashBridge~fbDir));\n      case HotAction~s'
-'tart:\n        commonAction~toggleRunning();\n      case HotAction~view:\n        unawaited(systemAction~updateVisible());\n      case HotAc'
-'tion~proxy:\n        systemAction~updateSystemProxy();\n      case HotAction~tun:\n        systemAction~updateTun();\n      case HotAction~r'
-'uleMode:\n        unawaited(ref~read(guardianProvider~notifier)~setFbDir(false));\n      case HotAction~globalMode:\n        unawaited(ref~'
-'read(guardianProvider~notifier)~setFbDir(false));\n      case HotAction~directMode:\n        unawaited(ref~read(guardianProvider~notifier)'
-'~setFbDir(true));\n      case HotAction~delayTest:\n        unawaited(ref~read(guardianProvider~notifier)~chkNow());\n      case HotAction~'
-'updateProfiles:\n        unawaited(FlClashBridge~syncAllSubsWithReport(ref));')
-def ck_a(): assert hashlib .sha256(repr((FB13, SG13, SW13, HOME13, NAV13, HKO13, HKN13)) .encode('utf-8')) .hexdigest()[:12] == 'bf826d96013b'
+'    switch (action) {\n      case HotAction~mode:\n        unawaited(ref~read(guardianProvider~notifier)~setFbDir(!FlClashBridge~fbDir));\n'
+'      case HotAction~start:\n        commonAction~toggleRunning();\n      case HotAction~view:\n        unawaited(systemAction~updateVisibl'
+'e());\n      case HotAction~proxy:\n        systemAction~updateSystemProxy();\n      case HotAction~tun:\n        systemAction~updateTun();\n'
+'      case HotAction~ruleMode:\n        unawaited(ref~read(guardianProvider~notifier)~setFbDir(false));\n      case HotAction~globalMode:\n'
+'        unawaited(ref~read(guardianProvider~notifier)~setFbDir(false));\n      case HotAction~directMode:\n        unawaited(ref~read(guar'
+'dianProvider~notifier)~setFbDir(true));\n      case HotAction~delayTest:\n        unawaited(ref~read(guardianProvider~notifier)~chkNow());'
+'\n      case HotAction~updateProfiles:\n        unawaited(FlClashBridge~syncAllSubsWithReport(ref~read(guardianProvider~notifier)~gRef));')
+def ck_a(): assert hashlib .sha256(repr((FB13, SG13, SW13, HOME13, NAV13, HKO13, HKN13)) .encode('utf-8')) .hexdigest()[:12] == '8eba2404ab36'
