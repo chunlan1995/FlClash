@@ -99,7 +99,7 @@ FB13 = [
 'yboardModifier> mods, int? key) {\nfinal ntf = ref~read(hotKeyActionsProvider~notifier), cur = ntf~value;\nfinal isBound = key != null && '
 'isValidHotKey(mods, key);\nfinal binding = HotKeyAction(action: action, modifiers: mods, key: key);\nfinal out = <HotKeyAction>[];\nvar pla'
 'ced = false;\nfor (final item in cur) {\nif (item~action == action) {\nplaced = true;\nif (isBound) out~add(binding);\n} else if (!(isBound &'
-'&& item~key == key && keyboardModifierListEquality~equals(item~modifiers, mods))) {\nout~add(item);\n}\n}\nif (isBound && !placed) out~add(bi'
+'& item~key == key && keyboardModifierListEquality~equals(item~modifiers, mods))) {\nout~add(item);\n}\n}\nif (isBound && !placed) out~add(bi'
 'nding);\nntf~value = out;\n}\nstatic LogLevel watchCoreLogLevel(WidgetRef ref) => ref~watch(patchClashConfigProvider~select((s) => s~logLev'
 'el));\nstatic void setCoreLogLevel(WidgetRef ref, LogLevel lv) {\nref~read(patchClashConfigProvider~notifier)~update((s) => s~copyWith(log'
 'Level: lv));\n}\nstatic List<BridgeLog> watchCoreLogsFull(WidgetRef ref, {int maxItems = 240}) {\ntry {\nfinal l = ref~watch(logsProvider)~l'
